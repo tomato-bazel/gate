@@ -5738,6 +5738,677 @@
     gate:upgradeFrom "2.4.0" ;
     gate:upgradeTo "3.1.2" .
 
+<https://tbzl.dev/m/gate/0.0.1> a gate:ModuleVersion ;
+    gate:name "gate" ;
+    gate:version "0.0.1" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "gate" ;
+    gate:yanked false ;
+    gate:homepage "https://github.com/tomato-bazel/gate" ;
+    gate:integrity "sha256-A05NaZjwvvo7dETwuEZe1cHdRKAqC3JYWf03Jfv5RVM=" ;
+    gate:sourceUrl "https://github.com/tomato-bazel/gate/archive/refs/tags/v0.0.1.tar.gz" ;
+    gate:stripPrefix "gate-0.0.1" ;
+    gate:dependsOn <https://tbzl.dev/m/platforms/1.0.0> ;
+    gate:dependsOn <https://tbzl.dev/m/bazel_skylib/1.8.2> ;
+    gate:dependsOn <https://tbzl.dev/m/rules_rust/0.70.0> ;
+    gate:dependsOn <https://tbzl.dev/m/rules_rdf/0.3.0> ;
+    gate:dependsOn <https://tbzl.dev/m/rules_jena/0.3.2> ;
+    gate:dependsOn <https://tbzl.dev/m/rules_tomato/0.1.2> ;
+    gate:devDependsOn <https://tbzl.dev/m/brand/0.3.1> ;
+    gate:devDependsOn <https://tbzl.dev/m/rules_shell/0.6.1> ;
+    gate:devDependsOn <https://tbzl.dev/m/stardoc/0.7.2> ;
+    gate:registersToolchainDev "@rust_toolchains//:all" ;
+    gate:usesExtension <https://tbzl.dev/ext/gate/0.0.1/0> ;
+    gate:usesExtension <https://tbzl.dev/ext/gate/0.0.1/1> ;
+    gate:projected true .
+
+<https://tbzl.dev/ext/gate/0.0.1/0> a gate:ExtensionUsage ;
+    gate:extBzlFile "@rules_rust//rust:extensions.bzl" ;
+    gate:extName "rust" ;
+    gate:extDev false ;
+    gate:extIsForeign true ;
+    gate:introducesRepo "rust_toolchains" ;
+    gate:ofModule <https://tbzl.dev/m/gate/0.0.1> .
+
+<https://tbzl.dev/ext/gate/0.0.1/1> a gate:ExtensionUsage ;
+    gate:extBzlFile "@rules_rust//crate_universe:extension.bzl" ;
+    gate:extName "crate" ;
+    gate:extDev false ;
+    gate:extIsForeign true ;
+    gate:introducesRepo "gate_crates" ;
+    gate:choseRepo "gate_crates" ;
+    gate:ofModule <https://tbzl.dev/m/gate/0.0.1> .
+
+<https://tbzl.dev/sel/gate/0.0.1/abseil-cpp> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "abseil-cpp" ;
+    gate:selectionVersion "20250814.1" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/apple_support> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "apple_support" ;
+    gate:selectionVersion "1.24.2" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "bazel_features" ;
+    gate:selectionVersion "1.42.1" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_skylib> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "bazel_skylib" ;
+    gate:selectionVersion "1.8.2" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_tools> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "bazel_tools" ;
+    gate:selectionVersion "9.2.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/brand> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "brand" ;
+    gate:selectionVersion "0.3.1" ;
+    gate:selectionExternal false .
+
+<https://tbzl.dev/sel/gate/0.0.1/buildozer> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "buildozer" ;
+    gate:selectionVersion "8.5.1" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/google_benchmark> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "google_benchmark" ;
+    gate:selectionVersion "1.8.2" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/googletest> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "googletest" ;
+    gate:selectionVersion "1.17.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/jsoncpp> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "jsoncpp" ;
+    gate:selectionVersion "1.9.6" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/libpfm> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "libpfm" ;
+    gate:selectionVersion "4.11.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/nlohmann_json> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "nlohmann_json" ;
+    gate:selectionVersion "3.6.1" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/platforms> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "platforms" ;
+    gate:selectionVersion "1.0.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/protobuf> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "protobuf" ;
+    gate:selectionVersion "33.4" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/pybind11_bazel> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "pybind11_bazel" ;
+    gate:selectionVersion "2.12.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/re2> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "re2" ;
+    gate:selectionVersion "2024-07-02.bcr.1" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_android> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_android" ;
+    gate:selectionVersion "0.1.1" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_apple> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_apple" ;
+    gate:selectionVersion "4.1.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_cc" ;
+    gate:selectionVersion "0.2.17" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_foreign_cc> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_foreign_cc" ;
+    gate:selectionVersion "0.9.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_fuzzing> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_fuzzing" ;
+    gate:selectionVersion "0.5.2" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_github> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_github" ;
+    gate:selectionVersion "0.1.1" ;
+    gate:selectionExternal false .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_java> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_java" ;
+    gate:selectionVersion "9.1.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_jena> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_jena" ;
+    gate:selectionVersion "0.3.2" ;
+    gate:selectionExternal false .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_jvm_external> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_jvm_external" ;
+    gate:selectionVersion "6.7" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_kotlin> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_kotlin" ;
+    gate:selectionVersion "1.9.6" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_license> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_license" ;
+    gate:selectionVersion "1.0.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_mdbook> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_mdbook" ;
+    gate:selectionVersion "0.3.1" ;
+    gate:selectionExternal false .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_pkg> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_pkg" ;
+    gate:selectionVersion "1.0.1" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_proto> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_proto" ;
+    gate:selectionVersion "7.1.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_python> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_python" ;
+    gate:selectionVersion "1.7.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_rdf> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_rdf" ;
+    gate:selectionVersion "0.3.0" ;
+    gate:selectionExternal false .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_rust> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_rust" ;
+    gate:selectionVersion "0.70.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_shell> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_shell" ;
+    gate:selectionVersion "0.6.1" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_swift> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_swift" ;
+    gate:selectionVersion "3.1.2" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_tectonic> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_tectonic" ;
+    gate:selectionVersion "0.2.0" ;
+    gate:selectionExternal false .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_tomato> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "rules_tomato" ;
+    gate:selectionVersion "0.1.2" ;
+    gate:selectionExternal false .
+
+<https://tbzl.dev/sel/gate/0.0.1/stardoc> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "stardoc" ;
+    gate:selectionVersion "0.7.2" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/swift_argument_parser> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "swift_argument_parser" ;
+    gate:selectionVersion "1.3.1.2" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/upb> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "upb" ;
+    gate:selectionVersion "0.0.0-20220923-a547704" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/zlib> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:selectionAtom "zlib" ;
+    gate:selectionVersion "1.3.1.bcr.5" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/gate/0.0.1/abseil-cpp/upgrade/20240116.2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "abseil-cpp" ;
+    gate:upgradeFrom "20240116.2" ;
+    gate:upgradeTo "20250814.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/abseil-cpp/upgrade/20250127.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "abseil-cpp" ;
+    gate:upgradeFrom "20250127.1" ;
+    gate:upgradeTo "20250814.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/abseil-cpp/upgrade/20250512.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "abseil-cpp" ;
+    gate:upgradeFrom "20250512.1" ;
+    gate:upgradeTo "20250814.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/apple_support/upgrade/1.11.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "apple_support" ;
+    gate:upgradeFrom "1.11.1" ;
+    gate:upgradeTo "1.24.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/apple_support/upgrade/1.15.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "apple_support" ;
+    gate:upgradeFrom "1.15.1" ;
+    gate:upgradeTo "1.24.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/apple_support/upgrade/1.21.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "apple_support" ;
+    gate:upgradeFrom "1.21.0" ;
+    gate:upgradeTo "1.24.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/apple_support/upgrade/1.21.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "apple_support" ;
+    gate:upgradeFrom "1.21.1" ;
+    gate:upgradeTo "1.24.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/apple_support/upgrade/1.24.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "apple_support" ;
+    gate:upgradeFrom "1.24.1" ;
+    gate:upgradeTo "1.24.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features/upgrade/1.10.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_features" ;
+    gate:upgradeFrom "1.10.0" ;
+    gate:upgradeTo "1.42.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features/upgrade/1.11.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_features" ;
+    gate:upgradeFrom "1.11.0" ;
+    gate:upgradeTo "1.42.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features/upgrade/1.17.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_features" ;
+    gate:upgradeFrom "1.17.0" ;
+    gate:upgradeTo "1.42.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features/upgrade/1.18.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_features" ;
+    gate:upgradeFrom "1.18.0" ;
+    gate:upgradeTo "1.42.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features/upgrade/1.21.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_features" ;
+    gate:upgradeFrom "1.21.0" ;
+    gate:upgradeTo "1.42.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features/upgrade/1.27.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_features" ;
+    gate:upgradeFrom "1.27.0" ;
+    gate:upgradeTo "1.42.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features/upgrade/1.28.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_features" ;
+    gate:upgradeFrom "1.28.0" ;
+    gate:upgradeTo "1.42.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features/upgrade/1.30.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_features" ;
+    gate:upgradeFrom "1.30.0" ;
+    gate:upgradeTo "1.42.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features/upgrade/1.32.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_features" ;
+    gate:upgradeFrom "1.32.0" ;
+    gate:upgradeTo "1.42.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_features/upgrade/1.33.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_features" ;
+    gate:upgradeFrom "1.33.0" ;
+    gate:upgradeTo "1.42.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_skylib/upgrade/1.3.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_skylib" ;
+    gate:upgradeFrom "1.3.0" ;
+    gate:upgradeTo "1.8.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_skylib/upgrade/1.4.2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_skylib" ;
+    gate:upgradeFrom "1.4.2" ;
+    gate:upgradeTo "1.8.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_skylib/upgrade/1.5.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_skylib" ;
+    gate:upgradeFrom "1.5.0" ;
+    gate:upgradeTo "1.8.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_skylib/upgrade/1.6.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_skylib" ;
+    gate:upgradeFrom "1.6.1" ;
+    gate:upgradeTo "1.8.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_skylib/upgrade/1.7.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_skylib" ;
+    gate:upgradeFrom "1.7.1" ;
+    gate:upgradeTo "1.8.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/bazel_skylib/upgrade/1.8.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "bazel_skylib" ;
+    gate:upgradeFrom "1.8.1" ;
+    gate:upgradeTo "1.8.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/brand/upgrade/0.2.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "brand" ;
+    gate:upgradeFrom "0.2.0" ;
+    gate:upgradeTo "0.3.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/platforms/upgrade/0.0.6> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "platforms" ;
+    gate:upgradeFrom "0.0.6" ;
+    gate:upgradeTo "1.0.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/platforms/upgrade/0.0.7> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "platforms" ;
+    gate:upgradeFrom "0.0.7" ;
+    gate:upgradeTo "1.0.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/platforms/upgrade/0.0.9> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "platforms" ;
+    gate:upgradeFrom "0.0.9" ;
+    gate:upgradeTo "1.0.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/platforms/upgrade/0.0.10> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "platforms" ;
+    gate:upgradeFrom "0.0.10" ;
+    gate:upgradeTo "1.0.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/platforms/upgrade/0.0.11> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "platforms" ;
+    gate:upgradeFrom "0.0.11" ;
+    gate:upgradeTo "1.0.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/protobuf/upgrade/27.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "protobuf" ;
+    gate:upgradeFrom "27.0" ;
+    gate:upgradeTo "33.4" .
+
+<https://tbzl.dev/sel/gate/0.0.1/protobuf/upgrade/29.0-rc2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "protobuf" ;
+    gate:upgradeFrom "29.0-rc2" ;
+    gate:upgradeTo "33.4" .
+
+<https://tbzl.dev/sel/gate/0.0.1/protobuf/upgrade/29.0-rc3> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "protobuf" ;
+    gate:upgradeFrom "29.0-rc3" ;
+    gate:upgradeTo "33.4" .
+
+<https://tbzl.dev/sel/gate/0.0.1/protobuf/upgrade/29.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "protobuf" ;
+    gate:upgradeFrom "29.1" ;
+    gate:upgradeTo "33.4" .
+
+<https://tbzl.dev/sel/gate/0.0.1/protobuf/upgrade/32.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "protobuf" ;
+    gate:upgradeFrom "32.1" ;
+    gate:upgradeTo "33.4" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_apple/upgrade/3.16.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_apple" ;
+    gate:upgradeFrom "3.16.0" ;
+    gate:upgradeTo "4.1.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc/upgrade/0.0.8> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_cc" ;
+    gate:upgradeFrom "0.0.8" ;
+    gate:upgradeTo "0.2.17" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc/upgrade/0.0.9> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_cc" ;
+    gate:upgradeFrom "0.0.9" ;
+    gate:upgradeTo "0.2.17" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc/upgrade/0.0.15> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_cc" ;
+    gate:upgradeFrom "0.0.15" ;
+    gate:upgradeTo "0.2.17" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc/upgrade/0.0.17> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_cc" ;
+    gate:upgradeFrom "0.0.17" ;
+    gate:upgradeTo "0.2.17" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc/upgrade/0.1.2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_cc" ;
+    gate:upgradeFrom "0.1.2" ;
+    gate:upgradeTo "0.2.17" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc/upgrade/0.1.5> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_cc" ;
+    gate:upgradeFrom "0.1.5" ;
+    gate:upgradeTo "0.2.17" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc/upgrade/0.2.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_cc" ;
+    gate:upgradeFrom "0.2.0" ;
+    gate:upgradeTo "0.2.17" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc/upgrade/0.2.4> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_cc" ;
+    gate:upgradeFrom "0.2.4" ;
+    gate:upgradeTo "0.2.17" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc/upgrade/0.2.8> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_cc" ;
+    gate:upgradeFrom "0.2.8" ;
+    gate:upgradeTo "0.2.17" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_cc/upgrade/0.2.13> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_cc" ;
+    gate:upgradeFrom "0.2.13" ;
+    gate:upgradeTo "0.2.17" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_java/upgrade/7.2.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_java" ;
+    gate:upgradeFrom "7.2.0" ;
+    gate:upgradeTo "9.1.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_java/upgrade/7.12.2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_java" ;
+    gate:upgradeFrom "7.12.2" ;
+    gate:upgradeTo "9.1.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_java/upgrade/8.5.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_java" ;
+    gate:upgradeFrom "8.5.1" ;
+    gate:upgradeTo "9.1.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_java/upgrade/8.6.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_java" ;
+    gate:upgradeFrom "8.6.1" ;
+    gate:upgradeTo "9.1.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_jvm_external/upgrade/6.3> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_jvm_external" ;
+    gate:upgradeFrom "6.3" ;
+    gate:upgradeTo "6.7" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_jvm_external/upgrade/6.6> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_jvm_external" ;
+    gate:upgradeFrom "6.6" ;
+    gate:upgradeTo "6.7" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_license/upgrade/0.0.3> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_license" ;
+    gate:upgradeFrom "0.0.3" ;
+    gate:upgradeTo "1.0.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_license/upgrade/0.0.7> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_license" ;
+    gate:upgradeFrom "0.0.7" ;
+    gate:upgradeTo "1.0.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_proto/upgrade/5.3.0-21.7> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_proto" ;
+    gate:upgradeFrom "5.3.0-21.7" ;
+    gate:upgradeTo "7.1.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_python/upgrade/0.23.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_python" ;
+    gate:upgradeFrom "0.23.1" ;
+    gate:upgradeTo "1.7.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_python/upgrade/0.31.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_python" ;
+    gate:upgradeFrom "0.31.0" ;
+    gate:upgradeTo "1.7.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_python/upgrade/0.33.2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_python" ;
+    gate:upgradeFrom "0.33.2" ;
+    gate:upgradeTo "1.7.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_python/upgrade/1.3.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_python" ;
+    gate:upgradeFrom "1.3.0" ;
+    gate:upgradeTo "1.7.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_python/upgrade/1.6.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_python" ;
+    gate:upgradeFrom "1.6.0" ;
+    gate:upgradeTo "1.7.0" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_shell/upgrade/0.2.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_shell" ;
+    gate:upgradeFrom "0.2.0" ;
+    gate:upgradeTo "0.6.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_shell/upgrade/0.3.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_shell" ;
+    gate:upgradeFrom "0.3.0" ;
+    gate:upgradeTo "0.6.1" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_swift/upgrade/1.16.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_swift" ;
+    gate:upgradeFrom "1.16.0" ;
+    gate:upgradeTo "3.1.2" .
+
+<https://tbzl.dev/sel/gate/0.0.1/rules_swift/upgrade/2.4.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/gate/0.0.1> ;
+    gate:upgradeAtom "rules_swift" ;
+    gate:upgradeFrom "2.4.0" ;
+    gate:upgradeTo "3.1.2" .
+
 <https://tbzl.dev/m/meridian/0.2.6> a gate:ModuleVersion ;
     gate:name "meridian" ;
     gate:version "0.2.6" ;
@@ -44200,595 +44871,595 @@
     gate:upgradeFrom "2.4.0" ;
     gate:upgradeTo "3.1.2" .
 
-<https://tbzl.dev/m/rules_tomato/0.1.1> a gate:ModuleVersion ;
+<https://tbzl.dev/m/rules_tomato/0.1.2> a gate:ModuleVersion ;
     a gate:RulesModule ;
     gate:name "rules_tomato" ;
-    gate:version "0.1.1" ;
+    gate:version "0.1.2" ;
     gate:isLatest true ;
     gate:namespacePrefix "rules_tomato" ;
     gate:namespacePrefix "tomato" ;
     gate:yanked false ;
     gate:homepage "https://github.com/tomato-bazel/rules_tomato" ;
-    gate:integrity "sha256-1hrLUs4NRfOvRYs9X48jvzwa3N5PQvmw04lRe9KGN1Y=" ;
-    gate:sourceUrl "https://github.com/tomato-bazel/rules_tomato/archive/refs/tags/v0.1.1.tar.gz" ;
-    gate:stripPrefix "rules_tomato-0.1.1" ;
+    gate:integrity "sha256-RvRAvefUrt78mIrbW5kh9Oa0AJRLK2pNo/piyx8xLkk=" ;
+    gate:sourceUrl "https://github.com/tomato-bazel/rules_tomato/archive/refs/tags/v0.1.2.tar.gz" ;
+    gate:stripPrefix "rules_tomato-0.1.2" ;
     gate:dependsOn <https://tbzl.dev/m/bazel_skylib/1.8.2> ;
     gate:dependsOn <https://tbzl.dev/m/rules_mdbook/0.3.1> ;
     gate:dependsOn <https://tbzl.dev/m/brand/0.2.0> ;
     gate:projected true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/abseil-cpp> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/abseil-cpp> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "abseil-cpp" ;
     gate:selectionVersion "20250814.1" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/apple_support> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/apple_support> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "apple_support" ;
     gate:selectionVersion "1.24.2" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_features> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_features> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "bazel_features" ;
     gate:selectionVersion "1.42.1" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_skylib> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_skylib> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "bazel_skylib" ;
     gate:selectionVersion "1.8.2" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_tools> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_tools> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "bazel_tools" ;
     gate:selectionVersion "9.2.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/brand> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/brand> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "brand" ;
     gate:selectionVersion "0.2.0" ;
     gate:selectionExternal false .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/buildozer> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/buildozer> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "buildozer" ;
     gate:selectionVersion "8.5.1" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/google_benchmark> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/google_benchmark> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "google_benchmark" ;
     gate:selectionVersion "1.8.2" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/googletest> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/googletest> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "googletest" ;
     gate:selectionVersion "1.17.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/jsoncpp> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/jsoncpp> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "jsoncpp" ;
     gate:selectionVersion "1.9.6" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/libpfm> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/libpfm> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "libpfm" ;
     gate:selectionVersion "4.11.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/nlohmann_json> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/nlohmann_json> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "nlohmann_json" ;
     gate:selectionVersion "3.6.1" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/platforms> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/platforms> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "platforms" ;
     gate:selectionVersion "1.0.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/protobuf> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/protobuf> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "protobuf" ;
     gate:selectionVersion "33.4" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/pybind11_bazel> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/pybind11_bazel> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "pybind11_bazel" ;
     gate:selectionVersion "2.12.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/re2> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/re2> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "re2" ;
     gate:selectionVersion "2024-07-02.bcr.1" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_android> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_android> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_android" ;
     gate:selectionVersion "0.1.1" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_apple> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_apple> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_apple" ;
     gate:selectionVersion "4.1.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_cc> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_cc> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_cc" ;
     gate:selectionVersion "0.2.17" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_foreign_cc> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_foreign_cc> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_foreign_cc" ;
     gate:selectionVersion "0.9.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_fuzzing> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_fuzzing> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_fuzzing" ;
     gate:selectionVersion "0.5.2" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_github> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_github> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_github" ;
     gate:selectionVersion "0.1.1" ;
     gate:selectionExternal false .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_java> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_java> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_java" ;
     gate:selectionVersion "9.1.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_jvm_external> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_jvm_external> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_jvm_external" ;
     gate:selectionVersion "6.7" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_kotlin> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_kotlin> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_kotlin" ;
     gate:selectionVersion "1.9.6" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_license> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_license> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_license" ;
     gate:selectionVersion "1.0.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_mdbook> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_mdbook> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_mdbook" ;
     gate:selectionVersion "0.3.1" ;
     gate:selectionExternal false .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_pkg> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_pkg> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_pkg" ;
     gate:selectionVersion "1.0.1" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_proto> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_proto> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_proto" ;
     gate:selectionVersion "7.1.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_python> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_python> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_python" ;
     gate:selectionVersion "1.7.0" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_shell> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_shell> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_shell" ;
     gate:selectionVersion "0.6.1" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_swift> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_swift> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_swift" ;
     gate:selectionVersion "3.1.2" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_tectonic> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_tectonic> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "rules_tectonic" ;
     gate:selectionVersion "0.2.0" ;
     gate:selectionExternal false .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/stardoc> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/stardoc> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "stardoc" ;
     gate:selectionVersion "0.7.2" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/swift_argument_parser> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/swift_argument_parser> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "swift_argument_parser" ;
     gate:selectionVersion "1.3.1.2" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/upb> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/upb> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "upb" ;
     gate:selectionVersion "0.0.0-20220923-a547704" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/zlib> a gate:Selection ;
-    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/zlib> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:selectionAtom "zlib" ;
     gate:selectionVersion "1.3.1.bcr.5" ;
     gate:selectionExternal true .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/abseil-cpp/upgrade/20240116.2> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/abseil-cpp/upgrade/20240116.2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "abseil-cpp" ;
     gate:upgradeFrom "20240116.2" ;
     gate:upgradeTo "20250814.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/abseil-cpp/upgrade/20250127.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/abseil-cpp/upgrade/20250127.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "abseil-cpp" ;
     gate:upgradeFrom "20250127.1" ;
     gate:upgradeTo "20250814.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/abseil-cpp/upgrade/20250512.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/abseil-cpp/upgrade/20250512.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "abseil-cpp" ;
     gate:upgradeFrom "20250512.1" ;
     gate:upgradeTo "20250814.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/apple_support/upgrade/1.11.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/apple_support/upgrade/1.11.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "apple_support" ;
     gate:upgradeFrom "1.11.1" ;
     gate:upgradeTo "1.24.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/apple_support/upgrade/1.15.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/apple_support/upgrade/1.15.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "apple_support" ;
     gate:upgradeFrom "1.15.1" ;
     gate:upgradeTo "1.24.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/apple_support/upgrade/1.21.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/apple_support/upgrade/1.21.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "apple_support" ;
     gate:upgradeFrom "1.21.0" ;
     gate:upgradeTo "1.24.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/apple_support/upgrade/1.21.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/apple_support/upgrade/1.21.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "apple_support" ;
     gate:upgradeFrom "1.21.1" ;
     gate:upgradeTo "1.24.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_features/upgrade/1.10.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_features/upgrade/1.10.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_features" ;
     gate:upgradeFrom "1.10.0" ;
     gate:upgradeTo "1.42.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_features/upgrade/1.11.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_features/upgrade/1.11.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_features" ;
     gate:upgradeFrom "1.11.0" ;
     gate:upgradeTo "1.42.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_features/upgrade/1.17.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_features/upgrade/1.17.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_features" ;
     gate:upgradeFrom "1.17.0" ;
     gate:upgradeTo "1.42.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_features/upgrade/1.18.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_features/upgrade/1.18.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_features" ;
     gate:upgradeFrom "1.18.0" ;
     gate:upgradeTo "1.42.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_features/upgrade/1.21.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_features/upgrade/1.21.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_features" ;
     gate:upgradeFrom "1.21.0" ;
     gate:upgradeTo "1.42.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_features/upgrade/1.27.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_features/upgrade/1.27.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_features" ;
     gate:upgradeFrom "1.27.0" ;
     gate:upgradeTo "1.42.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_features/upgrade/1.28.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_features/upgrade/1.28.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_features" ;
     gate:upgradeFrom "1.28.0" ;
     gate:upgradeTo "1.42.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_features/upgrade/1.30.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_features/upgrade/1.30.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_features" ;
     gate:upgradeFrom "1.30.0" ;
     gate:upgradeTo "1.42.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_features/upgrade/1.33.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_features/upgrade/1.33.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_features" ;
     gate:upgradeFrom "1.33.0" ;
     gate:upgradeTo "1.42.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_skylib/upgrade/1.3.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_skylib/upgrade/1.3.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_skylib" ;
     gate:upgradeFrom "1.3.0" ;
     gate:upgradeTo "1.8.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_skylib/upgrade/1.4.2> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_skylib/upgrade/1.4.2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_skylib" ;
     gate:upgradeFrom "1.4.2" ;
     gate:upgradeTo "1.8.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_skylib/upgrade/1.5.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_skylib/upgrade/1.5.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_skylib" ;
     gate:upgradeFrom "1.5.0" ;
     gate:upgradeTo "1.8.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_skylib/upgrade/1.6.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_skylib/upgrade/1.6.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_skylib" ;
     gate:upgradeFrom "1.6.1" ;
     gate:upgradeTo "1.8.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_skylib/upgrade/1.7.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_skylib/upgrade/1.7.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_skylib" ;
     gate:upgradeFrom "1.7.1" ;
     gate:upgradeTo "1.8.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/bazel_skylib/upgrade/1.8.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/bazel_skylib/upgrade/1.8.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "bazel_skylib" ;
     gate:upgradeFrom "1.8.1" ;
     gate:upgradeTo "1.8.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/platforms/upgrade/0.0.6> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/platforms/upgrade/0.0.6> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "platforms" ;
     gate:upgradeFrom "0.0.6" ;
     gate:upgradeTo "1.0.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/platforms/upgrade/0.0.7> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/platforms/upgrade/0.0.7> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "platforms" ;
     gate:upgradeFrom "0.0.7" ;
     gate:upgradeTo "1.0.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/platforms/upgrade/0.0.9> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/platforms/upgrade/0.0.9> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "platforms" ;
     gate:upgradeFrom "0.0.9" ;
     gate:upgradeTo "1.0.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/platforms/upgrade/0.0.10> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/platforms/upgrade/0.0.10> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "platforms" ;
     gate:upgradeFrom "0.0.10" ;
     gate:upgradeTo "1.0.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/platforms/upgrade/0.0.11> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/platforms/upgrade/0.0.11> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "platforms" ;
     gate:upgradeFrom "0.0.11" ;
     gate:upgradeTo "1.0.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/protobuf/upgrade/27.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/protobuf/upgrade/27.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "protobuf" ;
     gate:upgradeFrom "27.0" ;
     gate:upgradeTo "33.4" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/protobuf/upgrade/29.0-rc2> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/protobuf/upgrade/29.0-rc2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "protobuf" ;
     gate:upgradeFrom "29.0-rc2" ;
     gate:upgradeTo "33.4" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/protobuf/upgrade/29.0-rc3> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/protobuf/upgrade/29.0-rc3> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "protobuf" ;
     gate:upgradeFrom "29.0-rc3" ;
     gate:upgradeTo "33.4" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/protobuf/upgrade/29.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/protobuf/upgrade/29.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "protobuf" ;
     gate:upgradeFrom "29.1" ;
     gate:upgradeTo "33.4" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/protobuf/upgrade/32.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/protobuf/upgrade/32.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "protobuf" ;
     gate:upgradeFrom "32.1" ;
     gate:upgradeTo "33.4" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_apple/upgrade/3.16.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_apple/upgrade/3.16.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_apple" ;
     gate:upgradeFrom "3.16.0" ;
     gate:upgradeTo "4.1.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_cc/upgrade/0.0.8> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_cc/upgrade/0.0.8> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_cc" ;
     gate:upgradeFrom "0.0.8" ;
     gate:upgradeTo "0.2.17" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_cc/upgrade/0.0.9> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_cc/upgrade/0.0.9> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_cc" ;
     gate:upgradeFrom "0.0.9" ;
     gate:upgradeTo "0.2.17" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_cc/upgrade/0.0.15> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_cc/upgrade/0.0.15> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_cc" ;
     gate:upgradeFrom "0.0.15" ;
     gate:upgradeTo "0.2.17" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_cc/upgrade/0.0.17> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_cc/upgrade/0.0.17> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_cc" ;
     gate:upgradeFrom "0.0.17" ;
     gate:upgradeTo "0.2.17" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_cc/upgrade/0.1.2> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_cc/upgrade/0.1.2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_cc" ;
     gate:upgradeFrom "0.1.2" ;
     gate:upgradeTo "0.2.17" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_cc/upgrade/0.1.5> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_cc/upgrade/0.1.5> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_cc" ;
     gate:upgradeFrom "0.1.5" ;
     gate:upgradeTo "0.2.17" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_cc/upgrade/0.2.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_cc/upgrade/0.2.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_cc" ;
     gate:upgradeFrom "0.2.0" ;
     gate:upgradeTo "0.2.17" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_cc/upgrade/0.2.8> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_cc/upgrade/0.2.8> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_cc" ;
     gate:upgradeFrom "0.2.8" ;
     gate:upgradeTo "0.2.17" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_cc/upgrade/0.2.13> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_cc/upgrade/0.2.13> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_cc" ;
     gate:upgradeFrom "0.2.13" ;
     gate:upgradeTo "0.2.17" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_java/upgrade/7.2.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_java/upgrade/7.2.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_java" ;
     gate:upgradeFrom "7.2.0" ;
     gate:upgradeTo "9.1.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_java/upgrade/7.12.2> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_java/upgrade/7.12.2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_java" ;
     gate:upgradeFrom "7.12.2" ;
     gate:upgradeTo "9.1.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_java/upgrade/8.5.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_java/upgrade/8.5.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_java" ;
     gate:upgradeFrom "8.5.1" ;
     gate:upgradeTo "9.1.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_java/upgrade/8.6.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_java/upgrade/8.6.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_java" ;
     gate:upgradeFrom "8.6.1" ;
     gate:upgradeTo "9.1.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_jvm_external/upgrade/6.3> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_jvm_external/upgrade/6.3> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_jvm_external" ;
     gate:upgradeFrom "6.3" ;
     gate:upgradeTo "6.7" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_license/upgrade/0.0.3> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_license/upgrade/0.0.3> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_license" ;
     gate:upgradeFrom "0.0.3" ;
     gate:upgradeTo "1.0.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_license/upgrade/0.0.7> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_license/upgrade/0.0.7> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_license" ;
     gate:upgradeFrom "0.0.7" ;
     gate:upgradeTo "1.0.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_proto/upgrade/5.3.0-21.7> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_proto/upgrade/5.3.0-21.7> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_proto" ;
     gate:upgradeFrom "5.3.0-21.7" ;
     gate:upgradeTo "7.1.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_python/upgrade/0.23.1> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_python/upgrade/0.23.1> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_python" ;
     gate:upgradeFrom "0.23.1" ;
     gate:upgradeTo "1.7.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_python/upgrade/0.31.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_python/upgrade/0.31.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_python" ;
     gate:upgradeFrom "0.31.0" ;
     gate:upgradeTo "1.7.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_python/upgrade/0.33.2> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_python/upgrade/0.33.2> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_python" ;
     gate:upgradeFrom "0.33.2" ;
     gate:upgradeTo "1.7.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_python/upgrade/1.3.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_python/upgrade/1.3.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_python" ;
     gate:upgradeFrom "1.3.0" ;
     gate:upgradeTo "1.7.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_python/upgrade/1.6.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_python/upgrade/1.6.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_python" ;
     gate:upgradeFrom "1.6.0" ;
     gate:upgradeTo "1.7.0" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_shell/upgrade/0.2.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_shell/upgrade/0.2.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_shell" ;
     gate:upgradeFrom "0.2.0" ;
     gate:upgradeTo "0.6.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_shell/upgrade/0.3.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_shell/upgrade/0.3.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_shell" ;
     gate:upgradeFrom "0.3.0" ;
     gate:upgradeTo "0.6.1" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_swift/upgrade/1.16.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_swift/upgrade/1.16.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_swift" ;
     gate:upgradeFrom "1.16.0" ;
     gate:upgradeTo "3.1.2" .
 
-<https://tbzl.dev/sel/rules_tomato/0.1.1/rules_swift/upgrade/2.4.0> a gate:SilentUpgrade ;
-    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.1> ;
+<https://tbzl.dev/sel/rules_tomato/0.1.2/rules_swift/upgrade/2.4.0> a gate:SilentUpgrade ;
+    gate:upgradeRoot <https://tbzl.dev/m/rules_tomato/0.1.2> ;
     gate:upgradeAtom "rules_swift" ;
     gate:upgradeFrom "2.4.0" ;
     gate:upgradeTo "3.1.2" .
@@ -52406,6 +53077,11 @@
     gate:hasVersionDir "0.0.8" ;
     gate:hasVersionDir "0.0.9" ;
     gate:isRegistryEntry true .
+<https://tbzl.dev/mod/gate> a gate:Module ;
+    gate:name "gate" ;
+    gate:declaresVersion "0.0.1" ;
+    gate:hasVersionDir "0.0.1" ;
+    gate:isRegistryEntry true .
 <https://tbzl.dev/mod/meridian> a gate:Module ;
     gate:name "meridian" ;
     gate:declaresVersion "0.1.0" ;
@@ -53121,8 +53797,10 @@
     gate:name "rules_tomato" ;
     gate:declaresVersion "0.1.0" ;
     gate:declaresVersion "0.1.1" ;
+    gate:declaresVersion "0.1.2" ;
     gate:hasVersionDir "0.1.0" ;
     gate:hasVersionDir "0.1.1" ;
+    gate:hasVersionDir "0.1.2" ;
     gate:isRegistryEntry true .
 <https://tbzl.dev/mod/rules_uv> a gate:Module ;
     gate:name "rules_uv" ;
@@ -53228,6 +53906,9 @@
     gate:isExternal true .
 <https://tbzl.dev/m/brand/0.2.0> gate:name "brand" ;
     gate:version "0.2.0" ;
+    gate:isExternal false .
+<https://tbzl.dev/m/brand/0.3.1> gate:name "brand" ;
+    gate:version "0.3.1" ;
     gate:isExternal false .
 <https://tbzl.dev/m/brando/0.0.1> gate:name "brando" ;
     gate:version "0.0.1" ;
@@ -53465,6 +54146,9 @@
     gate:isExternal true .
 <https://tbzl.dev/m/rules_tectonic/0.2.0> gate:name "rules_tectonic" ;
     gate:version "0.2.0" ;
+    gate:isExternal false .
+<https://tbzl.dev/m/rules_tomato/0.1.2> gate:name "rules_tomato" ;
+    gate:version "0.1.2" ;
     gate:isExternal false .
 <https://tbzl.dev/m/rules_uv/0.7.3> gate:name "rules_uv" ;
     gate:version "0.7.3" ;
