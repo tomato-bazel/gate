@@ -57,10 +57,16 @@ jobs:
       # because its only version was yanked). A periodic report should surface
       # that, not fail forever on it. The proper fix is an S6 gate on
       # metadata/directory drift.
+      # --vendor is load-bearing, not optional. Without the vendored upstream
+      # closure, every third-party module resolves as a LEAF: MVS under-selects,
+      # and the C-family gates only see atoms our own modules name directly.
+      # Omitting it here quietly published different numbers than the same
+      # command produces locally.
       - name: Re-project the live registry
         run: |
           bazel run //crates/gate-rdf:project -- \
-            "$PWD/_registry" "$PWD/gates/testdata/registry.ttl" --allow-unresolved
+            "$PWD/_registry" "$PWD/gates/testdata/registry.ttl" \
+            --vendor "$PWD/vendor/bcr" --allow-unresolved
 
       - name: Render the report
         run: bazel build //gates:report
