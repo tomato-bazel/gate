@@ -70,5 +70,12 @@ crate.from_cargo(
 use_repo(crate, "gate_crates")
 
 # Dev-only: docs + stardoc for the //gates rule wrappers.
+#
+# `brand` is dev-only DELIBERATELY. It registers the tectonic (LaTeX) toolchain
+# non-dev for its own targets, so a non-dev dep here would impose that on every
+# consumer of `gate` — which is precisely the D2 leakage this repo exists to
+# detect. We only want @brand//mdbook:theme, a static filegroup. Registration
+# costs module resolution, not a download, unless a tectonic action runs.
+bazel_dep(name = "brand", version = "0.3.1", dev_dependency = True)
 bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True)

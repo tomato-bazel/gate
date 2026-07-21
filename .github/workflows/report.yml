@@ -71,10 +71,19 @@ jobs:
       - name: Render the report
         run: bazel build //gates:report
 
+      # The brand theme is dev-only in MODULE.bazel: `brand` registers the
+      # tectonic (LaTeX) toolchain non-dev for its own targets, and taking it as
+      # a real dep would impose that on every consumer of `gate` — the exact D2
+      # leakage this repo detects.
+      - name: Stage the brand theme
+        run: bazel build //docs:theme
+
       - name: Assemble the book
         run: |
-          mkdir -p docs/src
+          mkdir -p docs/src docs/theme
           cp -R bazel-bin/gates/report_src/. docs/src/
+          cp -R bazel-bin/docs/theme/. docs/theme/
+          chmod -R u+w docs/src docs/theme
           echo "pages generated: $(find docs/src -name '*.md' | wc -l)"
 
       - name: Install mdbook

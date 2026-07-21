@@ -1,0 +1,39 @@
+"""The brand theme, staged into mdBook's expected layout.
+
+`@brand//mdbook:theme` already ships the correct relative structure
+(`theme/css`, `theme/fonts`, `theme/head.hbs`), so this only strips the
+leading `mdbook/` path segment. Copying by path rather than by a name mapping
+keeps it font-agnostic: brand ships `SpaceGrotesk-*.ttf` today and `fonts.css`
+references those names, so a rename table would have to be updated in lockstep
+with the brand.
+
+The book itself is rendered by mdbook in CI rather than through
+`tomato_mdbook`, because its `src/` is a TREE ARTIFACT — one page per module,
+so the file set changes whenever the registry does — and `mdbook_book` takes a
+fixed `srcs` list.
+"""
+
+package(default_visibility = ["//visibility:public"])
+
+THEME_FILES = [
+    "theme/css/custom.css",
+    "theme/favicon.svg",
+    "theme/fonts/SpaceGrotesk-Medium.ttf",
+    "theme/fonts/SpaceGrotesk-SemiBold.ttf",
+    "theme/fonts/fonts.css",
+    "theme/head.hbs",
+]
+
+genrule(
+    name = "theme",
+    srcs = ["@brand//mdbook:theme"],
+    outs = THEME_FILES,
+    cmd = "\n".join([
+        "for f in $(SRCS); do",
+        '  rel="$${f#*/mdbook/}"',
+        '  dest="$(RULEDIR)/$$rel"',
+        '  mkdir -p "$$(dirname "$$dest")"',
+        '  cp "$$f" "$$dest"',
+        "done",
+    ]),
+)

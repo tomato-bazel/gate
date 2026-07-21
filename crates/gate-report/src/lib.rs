@@ -182,8 +182,15 @@ impl Gate {
     }
 }
 
+/// Escape text destined for markdown.
+///
+/// `|` would break out of a table cell, and `<` is read as raw HTML — the BOM
+/// note describing googleapis' pseudo-version format as `0.0.0-<date>-<sha>`
+/// made mdBook warn about an unclosed `<date>` tag and swallow the text. Both
+/// characters arrive from data (query results, BOM notes), so neither can be
+/// assumed safe.
 fn md_escape(s: &str) -> String {
-    s.replace('|', "\\|")
+    s.replace('|', "\\|").replace('<', "&lt;").replace('>', "&gt;")
 }
 
 /// Render a result set as a markdown table, preserving the query's own variable
