@@ -1,0 +1,19 @@
+# C1 attribution. The C1 gate itself is registry-level — it reports that an atom
+# is live at two versions, not who is responsible — which is right for a gate but
+# useless on a per-module docs page.
+#
+# This companion answers "which modules select which version", so a module's page
+# can say: you resolve platforms 0.0.10 while 62 other modules resolve 1.0.0.
+# That is the sentence a maintainer can act on.
+PREFIX gate: <https://tbzl.dev/ns/gate#>
+
+SELECT ?module ?atom ?version
+WHERE {
+  ?s a gate:Selection ;
+     gate:selectionRoot ?m ;
+     gate:selectionAtom ?atom ;
+     gate:selectionVersion ?version ;
+     gate:selectionExternal true .
+  ?m gate:name ?module ; gate:isLatest true .
+}
+ORDER BY ?atom ?version ?module

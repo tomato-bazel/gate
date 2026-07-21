@@ -1,0 +1,16 @@
+[package]
+name = "gate-report"
+description = "Render gate results as an mdBook source tree for tbzl.dev."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "gate-report"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true

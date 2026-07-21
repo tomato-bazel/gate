@@ -1,0 +1,23 @@
+# Modules that declared one version of a dependency and were silently given a
+# higher one by MVS.
+#
+# This has no enforcement counterpart in Bazel any more. `compatibility_level`
+# and `max_compatibility_level` became NO-OPS in Bazel 8.6.0 / 9.1.0 — upstream
+# removed them because raising the level produced version conflicts end users
+# could not resolve — so nothing rejects an incompatible co-selection. MVS takes
+# max-of-minimums and the consumer finds out at build time, or doesn't.
+#
+# Reported rather than gated: the fix is C1 (one live version per atom), not
+# forbidding the upgrade. This is the evidence for why C1 matters.
+PREFIX gate: <https://tbzl.dev/ns/gate#>
+
+SELECT ?module ?atom ?declared ?got
+WHERE {
+  ?u a gate:SilentUpgrade ;
+     gate:upgradeRoot ?m ;
+     gate:upgradeAtom ?atom ;
+     gate:upgradeFrom ?declared ;
+     gate:upgradeTo ?got .
+  ?m gate:name ?module .
+}
+ORDER BY ?atom ?module

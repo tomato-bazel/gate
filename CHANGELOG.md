@@ -38,5 +38,14 @@ published bazel-registry entries.
   Each is wired both against a clean fixture (must return zero rows) and a
   known-violation fixture diffed against a committed golden, so a malformed
   query cannot masquerade as a passing gate.
+- `gate-report` + `//gates:report`: the conformance report as a tree artifact —
+  a summary scoreboard, a page per invariant, a page per module, and a
+  third-party atoms page with BOM conformance. 80 pages, regenerated from the
+  projection on every build.
+  Gate rationale is EXTRACTED from each `.rq` file's header comment rather than
+  written separately, so documentation cannot drift from the gate it documents.
+  Findings are attributed to a module only when the query exposes a `?module`
+  variable; registry-level invariants like C1 stay on the summary rather than
+  being blamed on an arbitrary module.
 
 ## 0.0.1 — scaffold

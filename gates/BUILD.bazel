@@ -21,6 +21,7 @@ premise of the remediation programme — it is exposed as `report_*` targets to
 `bazel run`, and becomes a test when the corpus is green.
 """
 
+load("//gates:report.bzl", "gate_report")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@rules_rdf//rdf:dataset.bzl", "rdf_dataset")
 load("@rules_rdf//sparql:defs.bzl", "sparql_query", "sparql_query_smoke_test", "sparql_query_test")
@@ -111,3 +112,42 @@ sparql_query_smoke_test(
     )
     for g in GATES
 ]
+
+# ---------------------------------------------------------------------------
+# The tbzl.dev conformance report
+# ---------------------------------------------------------------------------
+#
+# Gate results, rendered as an mdBook source tree. JSON rather than TSV for the
+# report path: Jena's TSV quotes literals, and re-parsing that correctly is
+# fiddly in a way that would silently corrupt a table. TSV stays for the golden
+# diffs, where a human reads it.
+#
+# The report is a pure function of (projection x queries) — no hidden state,
+# nothing fetched — so it regenerates deterministically in CI.
+
+REPORT_QUERIES = GATES + [
+    "inventory",
+    "c1_atom_selection_by_module",
+    "silent_upgrades",
+]
+
+[
+    sparql_query(
+        name = "json_" + q,
+        out_format = "json",
+        dataset = ":registry",
+        query = q + ".rq",
+    )
+    for q in REPORT_QUERIES
+]
+
+gate_report(
+    name = "report",
+    bom = "@rules_tomato//bom:versions.json",
+    gate_ids = GATES,
+    gate_queries = [g + ".rq" for g in GATES],
+    gate_results = [":json_" + g for g in GATES],
+    inventory = ":json_inventory",
+    selections = ":json_c1_atom_selection_by_module",
+    upgrades = ":json_silent_upgrades",
+)

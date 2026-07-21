@@ -1,0 +1,30 @@
+"""gate-report — render gate results as an mdBook source tree."""
+
+load("@gate_crates//:defs.bzl", "all_crate_deps")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_test")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "gate_report",
+    srcs = ["src/lib.rs"],
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    deps = all_crate_deps(normal = True),
+)
+
+rust_test(
+    name = "gate_report_test",
+    crate = ":gate_report",
+    edition = "2021",
+)
+
+rust_binary(
+    name = "gate-report",
+    srcs = ["src/main.rs"],
+    crate_root = "src/main.rs",
+    edition = "2021",
+    deps = [":gate_report"] + all_crate_deps(normal = True),
+)
+
+exports_files(["Cargo.toml"])

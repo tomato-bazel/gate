@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/bzlmod",
     "crates/gate-rdf",
+    "crates/gate-report",
 ]
 
 [workspace.package]

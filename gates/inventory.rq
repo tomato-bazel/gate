@@ -1,0 +1,16 @@
+# Per-module inventory for the docs site. Not a gate — a projection of the
+# registry into the shape the report renderer wants, so that presentation logic
+# stays out of Rust and out of the gate queries.
+PREFIX gate: <https://tbzl.dev/ns/gate#>
+
+SELECT ?module ?version ?homepage ?integrity ?sourceUrl ?kind
+WHERE {
+  ?m gate:name ?module ;
+     gate:version ?version ;
+     gate:isLatest true .
+  OPTIONAL { ?m gate:homepage ?homepage }
+  OPTIONAL { ?m gate:integrity ?integrity }
+  OPTIONAL { ?m gate:sourceUrl ?sourceUrl }
+  BIND(IF(EXISTS { ?m a gate:RulesModule }, "rules", "other") AS ?kind)
+}
+ORDER BY ?module
