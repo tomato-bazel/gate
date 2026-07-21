@@ -503,12 +503,32 @@ fn string_list(v: Option<Value<'_>>) -> Vec<String> {
     Vec::new()
 }
 
-fn opt_string(s: Option<String>) -> Option<String> {
-    s.filter(|s| !s.is_empty())
+/// Coerce an optional Starlark argument to a string.
+///
+/// Takes `Option<Value>` rather than `Option<String>` because real
+/// `MODULE.bazel` files pass an EXPLICIT `None` for optional parameters —
+/// `aspect_rules_js` writes `bazel_dep(..., repo_name = None)`. A typed
+/// `Option<String>` parameter means "may be omitted", and starlark-rust
+/// correctly rejects an explicit `None` as a type error. Treating the two
+/// alike is what a permissive registry reader has to do.
+fn opt_string(v: Option<Value<'_>>) -> Option<String> {
+    v.and_then(|v| v.unpack_str())
+        .map(str::to_owned)
+        .filter(|s| !s.is_empty())
 }
 
-fn parse_version(s: Option<String>) -> anyhow::Result<Version> {
-    match s {
+/// Same tolerance for integer parameters.
+fn opt_i64(v: Option<Value<'_>>) -> Option<i64> {
+    v.and_then(|v| v.unpack_i32()).map(i64::from)
+}
+
+/// Same tolerance for a required-with-default string.
+fn str_or(v: Option<Value<'_>>, default: &str) -> String {
+    opt_string(v).unwrap_or_else(|| default.to_owned())
+}
+
+fn parse_version(v: Option<Value<'_>>) -> anyhow::Result<Version> {
+    match opt_string(v) {
         Some(s) => Ok(Version::parse(&s)?),
         None => Ok(Version::empty()),
     }
@@ -521,18 +541,18 @@ fn parse_version(s: Option<String>) -> anyhow::Result<Version> {
 #[starlark_module]
 fn module_globals(globals: &mut GlobalsBuilder) {
     fn module<'v>(
-        #[starlark(require = named, default = String::new())] name: String,
-        #[starlark(require = named)] version: Option<String>,
-        #[starlark(require = named)] compatibility_level: Option<i32>,
+        #[starlark(require = named)] name: Option<Value<'v>>,
+        #[starlark(require = named)] version: Option<Value<'v>>,
+        #[starlark(require = named)] compatibility_level: Option<Value<'v>>,
         #[starlark(require = named)] bazel_compatibility: Option<Value<'v>>,
-        #[starlark(require = named)] repo_name: Option<String>,
+        #[starlark(require = named)] repo_name: Option<Value<'v>>,
         #[starlark(kwargs)] _extra: Value<'v>,
         eval: &mut Evaluator<'v, '_, '_>,
     ) -> anyhow::Result<NoneType> {
         let decl = ModuleDecl {
-            name,
+            name: str_or(name, ""),
             version: parse_version(version)?,
-            compatibility_level: compatibility_level.map(i64::from),
+            compatibility_level: opt_i64(compatibility_level),
             bazel_compatibility: string_list(bazel_compatibility),
             repo_name: opt_string(repo_name),
         };
@@ -541,18 +561,18 @@ fn module_globals(globals: &mut GlobalsBuilder) {
     }
 
     fn bazel_dep<'v>(
-        #[starlark(require = named)] name: String,
-        #[starlark(require = named)] version: Option<String>,
-        #[starlark(require = named)] max_compatibility_level: Option<i32>,
-        #[starlark(require = named)] repo_name: Option<String>,
+        #[starlark(require = named)] name: Option<Value<'v>>,
+        #[starlark(require = named)] version: Option<Value<'v>>,
+        #[starlark(require = named)] max_compatibility_level: Option<Value<'v>>,
+        #[starlark(require = named)] repo_name: Option<Value<'v>>,
         #[starlark(require = named, default = false)] dev_dependency: bool,
         #[starlark(kwargs)] _extra: Value<'v>,
         eval: &mut Evaluator<'v, '_, '_>,
     ) -> anyhow::Result<NoneType> {
         let dep = BazelDep {
-            name,
+            name: str_or(name, ""),
             version: parse_version(version)?,
-            max_compatibility_level: max_compatibility_level.map(i64::from),
+            max_compatibility_level: opt_i64(max_compatibility_level),
             repo_name: opt_string(repo_name),
             dev_dependency,
         };
@@ -561,8 +581,8 @@ fn module_globals(globals: &mut GlobalsBuilder) {
     }
 
     fn use_extension<'v>(
-        #[starlark(require = pos)] bzl_file: String,
-        #[starlark(require = pos)] name: String,
+        #[starlark(require = pos)] bzl_file: Option<Value<'v>>,
+        #[starlark(require = pos)] name: Option<Value<'v>>,
         #[starlark(require = named, default = false)] dev_dependency: bool,
         #[starlark(require = named, default = false)] isolate: bool,
         #[starlark(kwargs)] _extra: Value<'v>,
@@ -572,8 +592,8 @@ fn module_globals(globals: &mut GlobalsBuilder) {
         let mut f = s.file.borrow_mut();
         let index = f.extensions.len();
         f.extensions.push(ExtensionUsage {
-            bzl_file,
-            name,
+            bzl_file: str_or(bzl_file, ""),
+            name: str_or(name, ""),
             dev_dependency,
             isolate,
             tags: Vec::new(),
@@ -620,8 +640,8 @@ fn module_globals(globals: &mut GlobalsBuilder) {
     }
 
     fn use_repo_rule<'v>(
-        #[starlark(require = pos)] bzl_file: String,
-        #[starlark(require = pos)] rule_name: String,
+        #[starlark(require = pos)] bzl_file: Option<Value<'v>>,
+        #[starlark(require = pos)] rule_name: Option<Value<'v>>,
         #[starlark(require = named, default = false)] dev_dependency: bool,
         eval: &mut Evaluator<'v, '_, '_>,
     ) -> anyhow::Result<RepoRuleCallable> {
@@ -629,8 +649,8 @@ fn module_globals(globals: &mut GlobalsBuilder) {
         let mut f = s.file.borrow_mut();
         let index = f.repo_rules.len();
         f.repo_rules.push(RepoRuleUsage {
-            bzl_file,
-            rule_name,
+            bzl_file: str_or(bzl_file, ""),
+            rule_name: str_or(rule_name, ""),
             dev_dependency,
         });
         Ok(RepoRuleCallable { index })
@@ -665,9 +685,9 @@ fn module_globals(globals: &mut GlobalsBuilder) {
     }
 
     fn single_version_override<'v>(
-        #[starlark(require = named)] module_name: String,
-        #[starlark(require = named)] version: Option<String>,
-        #[starlark(require = named)] registry: Option<String>,
+        #[starlark(require = named)] module_name: Option<Value<'v>>,
+        #[starlark(require = named)] version: Option<Value<'v>>,
+        #[starlark(require = named)] registry: Option<Value<'v>>,
         #[starlark(kwargs)] _extra: Value<'v>,
         eval: &mut Evaluator<'v, '_, '_>,
     ) -> anyhow::Result<NoneType> {
@@ -676,7 +696,7 @@ fn module_globals(globals: &mut GlobalsBuilder) {
             .borrow_mut()
             .overrides
             .push(Override::SingleVersion {
-                module_name,
+                module_name: str_or(module_name, ""),
                 version: parse_version(version)?,
                 registry: opt_string(registry),
             });
@@ -684,9 +704,9 @@ fn module_globals(globals: &mut GlobalsBuilder) {
     }
 
     fn multiple_version_override<'v>(
-        #[starlark(require = named)] module_name: String,
+        #[starlark(require = named)] module_name: Option<Value<'v>>,
         #[starlark(require = named)] versions: Option<Value<'v>>,
-        #[starlark(require = named)] registry: Option<String>,
+        #[starlark(require = named)] registry: Option<Value<'v>>,
         #[starlark(kwargs)] _extra: Value<'v>,
         eval: &mut Evaluator<'v, '_, '_>,
     ) -> anyhow::Result<NoneType> {
@@ -699,7 +719,7 @@ fn module_globals(globals: &mut GlobalsBuilder) {
             .borrow_mut()
             .overrides
             .push(Override::MultipleVersion {
-                module_name,
+                module_name: str_or(module_name, ""),
                 versions,
                 registry: opt_string(registry),
             });
@@ -707,10 +727,10 @@ fn module_globals(globals: &mut GlobalsBuilder) {
     }
 
     fn archive_override<'v>(
-        #[starlark(require = named)] module_name: String,
+        #[starlark(require = named)] module_name: Option<Value<'v>>,
         #[starlark(require = named)] urls: Option<Value<'v>>,
-        #[starlark(require = named)] integrity: Option<String>,
-        #[starlark(require = named)] strip_prefix: Option<String>,
+        #[starlark(require = named)] integrity: Option<Value<'v>>,
+        #[starlark(require = named)] strip_prefix: Option<Value<'v>>,
         #[starlark(kwargs)] _extra: Value<'v>,
         eval: &mut Evaluator<'v, '_, '_>,
     ) -> anyhow::Result<NoneType> {
@@ -719,7 +739,7 @@ fn module_globals(globals: &mut GlobalsBuilder) {
             .borrow_mut()
             .overrides
             .push(Override::Archive {
-                module_name,
+                module_name: str_or(module_name, ""),
                 urls: string_list(urls),
                 integrity: opt_string(integrity),
                 strip_prefix: opt_string(strip_prefix),
@@ -728,23 +748,23 @@ fn module_globals(globals: &mut GlobalsBuilder) {
     }
 
     fn git_override<'v>(
-        #[starlark(require = named)] module_name: String,
-        #[starlark(require = named, default = String::new())] remote: String,
-        #[starlark(require = named)] commit: Option<String>,
+        #[starlark(require = named)] module_name: Option<Value<'v>>,
+        #[starlark(require = named)] remote: Option<Value<'v>>,
+        #[starlark(require = named)] commit: Option<Value<'v>>,
         #[starlark(kwargs)] _extra: Value<'v>,
         eval: &mut Evaluator<'v, '_, '_>,
     ) -> anyhow::Result<NoneType> {
         sink(eval)?.file.borrow_mut().overrides.push(Override::Git {
-            module_name,
-            remote,
+            module_name: str_or(module_name, ""),
+            remote: str_or(remote, ""),
             commit: opt_string(commit),
         });
         Ok(NoneType)
     }
 
     fn local_path_override<'v>(
-        #[starlark(require = named)] module_name: String,
-        #[starlark(require = named, default = String::new())] path: String,
+        #[starlark(require = named)] module_name: Option<Value<'v>>,
+        #[starlark(require = named)] path: Option<Value<'v>>,
         #[starlark(kwargs)] _extra: Value<'v>,
         eval: &mut Evaluator<'v, '_, '_>,
     ) -> anyhow::Result<NoneType> {
@@ -752,15 +772,18 @@ fn module_globals(globals: &mut GlobalsBuilder) {
             .file
             .borrow_mut()
             .overrides
-            .push(Override::LocalPath { module_name, path });
+            .push(Override::LocalPath {
+                module_name: str_or(module_name, ""),
+                path: str_or(path, ""),
+            });
         Ok(NoneType)
     }
 
     fn include<'v>(
-        #[starlark(require = pos)] label: String,
+        #[starlark(require = pos)] label: Option<Value<'v>>,
         eval: &mut Evaluator<'v, '_, '_>,
     ) -> anyhow::Result<NoneType> {
-        sink(eval)?.file.borrow_mut().includes.push(label);
+        sink(eval)?.file.borrow_mut().includes.push(str_or(label, ""));
         Ok(NoneType)
     }
 }

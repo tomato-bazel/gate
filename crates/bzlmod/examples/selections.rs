@@ -9,18 +9,32 @@
 //!     cargo run -p bzlmod --example selections -- <registry> <module> [version]
 
 use bzlmod::graph::{resolve, ModuleKey};
-use bzlmod::registry::{FsRegistry, Registry};
+use bzlmod::registry::{FsRegistry, MultiRegistry, Registry};
 
 fn main() -> anyhow::Result<()> {
-    let mut args = std::env::args().skip(1);
-    let registry = args
-        .next()
-        .ok_or_else(|| anyhow::anyhow!("usage: selections <registry> <module> [version]"))?;
-    let module = args
-        .next()
-        .ok_or_else(|| anyhow::anyhow!("usage: selections <registry> <module> [version]"))?;
+    let mut positional = Vec::new();
+    let mut vendor: Option<String> = None;
+    let mut it = std::env::args().skip(1);
+    while let Some(a) = it.next() {
+        if a == "--vendor" {
+            vendor = it.next();
+        } else {
+            positional.push(a);
+        }
+    }
+    let mut args = positional.into_iter();
+    let registry = args.next().ok_or_else(|| {
+        anyhow::anyhow!("usage: selections <registry> <module> [version] [--vendor <dir>]")
+    })?;
+    let module = args.next().ok_or_else(|| {
+        anyhow::anyhow!("usage: selections <registry> <module> [version] [--vendor <dir>]")
+    })?;
 
     let reg = FsRegistry::open(&registry)?;
+    let vendored = match &vendor {
+        Some(p) => Some(FsRegistry::open(p)?),
+        None => None,
+    };
     let version = match args.next() {
         Some(v) => bzlmod::Version::parse(&v)?,
         None => reg
@@ -28,7 +42,15 @@ fn main() -> anyhow::Result<()> {
             .ok_or_else(|| anyhow::anyhow!("{module}: no versions in {registry}"))?,
     };
 
-    let g = resolve(&reg, ModuleKey::new(module.clone(), version.clone()))?;
+    let chained;
+    let resolver: &dyn Registry = match &vendored {
+        Some(v) => {
+            chained = MultiRegistry::new(vec![&reg, v]);
+            &chained
+        }
+        None => &reg,
+    };
+    let g = resolve(resolver, ModuleKey::new(module.clone(), version.clone()))?;
 
     let mut out = serde_json::Map::new();
     for (name, v) in g.selections() {

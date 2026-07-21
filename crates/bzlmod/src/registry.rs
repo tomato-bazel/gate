@@ -254,6 +254,79 @@ impl Registry for FsRegistry {
     }
 }
 
+/// Several registries consulted in order, first match wins.
+///
+/// This is exactly Bazel's `--registry` semantics: the flag may be repeated and
+/// the first registry holding a module supplies it. `.bazelrc` here lists
+/// `registry.tbzl.dev` then `bcr.bazel.build`, and this mirrors that so the
+/// gate resolves what a consumer would.
+///
+/// Both members are filesystem registries in practice — the BCR half is a
+/// VENDORED SNAPSHOT rather than a live client, which is what keeps a
+/// certificate a function of the commit instead of of network state on the day
+/// it ran. See `gate-snapshot`.
+pub struct MultiRegistry<'a> {
+    registries: Vec<&'a dyn Registry>,
+}
+
+impl<'a> MultiRegistry<'a> {
+    pub fn new(registries: Vec<&'a dyn Registry>) -> Self {
+        MultiRegistry { registries }
+    }
+}
+
+impl Registry for MultiRegistry<'_> {
+    /// The union, deduplicated. A module present in several registries is one
+    /// module; the first registry's copy is the one that resolves.
+    fn modules(&self) -> anyhow::Result<Vec<String>> {
+        let mut out = std::collections::BTreeSet::new();
+        for r in &self.registries {
+            out.extend(r.modules()?);
+        }
+        Ok(out.into_iter().collect())
+    }
+
+    /// Versions from the FIRST registry that has any. Not the union: if the
+    /// local registry publishes a module, its version list is authoritative and
+    /// a same-named BCR module must not silently contribute versions to it.
+    fn version_dirs(&self, name: &str) -> anyhow::Result<Vec<Version>> {
+        for r in &self.registries {
+            let v = r.version_dirs(name)?;
+            if !v.is_empty() {
+                return Ok(v);
+            }
+        }
+        Ok(Vec::new())
+    }
+
+    fn metadata(&self, name: &str) -> anyhow::Result<Option<Metadata>> {
+        for r in &self.registries {
+            if let Some(m) = r.metadata(name)? {
+                return Ok(Some(m));
+            }
+        }
+        Ok(None)
+    }
+
+    fn module_text(&self, name: &str, version: &Version) -> anyhow::Result<Option<String>> {
+        for r in &self.registries {
+            if let Some(t) = r.module_text(name, version)? {
+                return Ok(Some(t));
+            }
+        }
+        Ok(None)
+    }
+
+    fn source(&self, name: &str, version: &Version) -> anyhow::Result<Option<SourceJson>> {
+        for r in &self.registries {
+            if let Some(s) = r.source(name, version)? {
+                return Ok(Some(s));
+            }
+        }
+        Ok(None)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

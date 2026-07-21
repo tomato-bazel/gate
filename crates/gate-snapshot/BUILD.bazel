@@ -1,0 +1,16 @@
+"""gate-snapshot — vendor the upstream MODULE.bazel closure. READ-ONLY."""
+
+load("@gate_crates//:defs.bzl", "all_crate_deps")
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_binary(
+    name = "snapshot",
+    srcs = ["src/main.rs"],
+    crate_root = "src/main.rs",
+    edition = "2021",
+    deps = ["//crates/bzlmod"] + all_crate_deps(normal = True),
+)
+
+exports_files(["Cargo.toml"])

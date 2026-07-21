@@ -1,6 +1,6 @@
 //! `project` — emit the registry's facts as Turtle.
 //!
-//!     project <registry-root> [out.ttl] [--allow-unresolved]
+//!     project <registry-root> [out.ttl] [--vendor <dir>] [--allow-unresolved]
 //!
 //! Writes to stdout when no output path is given. Unresolvable modules go to
 //! stderr and set a non-zero exit by default, because a module the projector
@@ -14,17 +14,24 @@
 //! than fail forever. The proper home for it is an S6 gate on metadata/directory
 //! drift — this flag is the interim, not the answer.
 
-use bzlmod::registry::FsRegistry;
+use bzlmod::registry::{FsRegistry, MultiRegistry, Registry};
 
 fn main() -> anyhow::Result<()> {
     let args = std::env::args().skip(1);
     let mut positional: Vec<String> = Vec::new();
     let mut allow_unresolved = false;
-    for a in args {
-        if a == "--allow-unresolved" {
-            allow_unresolved = true;
-        } else {
-            positional.push(a);
+    let mut vendor: Option<String> = None;
+    let mut args = args.peekable();
+    while let Some(a) = args.next() {
+        match a.as_str() {
+            "--allow-unresolved" => allow_unresolved = true,
+            "--vendor" => {
+                vendor = Some(
+                    args.next()
+                        .ok_or_else(|| anyhow::anyhow!("--vendor expects a directory"))?,
+                )
+            }
+            _ => positional.push(a),
         }
     }
     let mut positional = positional.into_iter();
@@ -34,7 +41,25 @@ fn main() -> anyhow::Result<()> {
     let out_path = positional.next();
 
     let reg = FsRegistry::open(&root)?;
-    let (ttl, unresolved) = gate_rdf::project_registry(&reg)?;
+
+    // With a vendored upstream snapshot, dependencies resolve through the chain
+    // — local first, then upstream — which is Bazel's own --registry ordering.
+    // Without it the projection still works, but every third-party module is a
+    // leaf: we know who depends on it, not what it pulls in.
+    let vendored = match &vendor {
+        Some(p) => Some(FsRegistry::open(p)?),
+        None => None,
+    };
+    let chained;
+    let resolver: &dyn Registry = match &vendored {
+        Some(v) => {
+            chained = MultiRegistry::new(vec![&reg, v]);
+            &chained
+        }
+        None => &reg,
+    };
+
+    let (ttl, unresolved) = gate_rdf::project_registry(&reg, resolver)?;
 
     match &out_path {
         Some(p) => std::fs::write(p, &ttl)?,

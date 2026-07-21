@@ -1,0 +1,16 @@
+[package]
+name = "gate-snapshot"
+description = "Vendor the third-party MODULE.bazel closure from an upstream registry. READ-ONLY: fetches, never publishes."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "snapshot"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+bzlmod = { path = "../bzlmod" }
+reqwest = { workspace = true }

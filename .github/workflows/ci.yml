@@ -37,4 +37,12 @@ jobs:
           curl -fsSL -o /usr/local/bin/buildifier \
             https://github.com/bazelbuild/buildtools/releases/download/v7.3.1/buildifier-linux-amd64
           chmod +x /usr/local/bin/buildifier
-      - run: buildifier --mode=check --lint=warn -r .
+      # NOT `-r .`: vendor/ holds byte-exact copies of upstream MODULE.bazel
+      # files. Reformatting them would make the snapshot misrepresent what
+      # upstream actually published, and would break `snapshot --check`, which
+      # compares the vendored bytes against the live registry.
+      # crates/bzlmod/testdata is excluded for the same reason — see its README.
+      - run: |
+          find . -name vendor -prune -o -name testdata -prune -o \
+                 \( -name '*.bzl' -o -name 'BUILD.bazel' -o -name 'MODULE.bazel' \) -print \
+            | xargs buildifier --mode=check --lint=warn

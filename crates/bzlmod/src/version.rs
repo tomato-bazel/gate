@@ -40,8 +40,6 @@ pub enum VersionError {
     EmptyIdentifier(String, String),
     #[error("version {0:?}: identifier {1:?} contains a character outside [A-Za-z0-9-]")]
     BadCharacter(String, String),
-    #[error("version {0:?}: release component {1:?} must be all digits")]
-    NonNumericRelease(String, String),
 }
 
 /// One dot-separated component of a release or prerelease.
@@ -126,17 +124,14 @@ impl Version {
             None => (rest, None),
         };
 
+        // Release identifiers are NOT required to be numeric. Bazel's format is
+        // a relaxed SemVer, and the BCR leans on that: `zlib 1.3.1.bcr.5` and
+        // `gawk 5.3.2.bcr.1` are its re-release convention, and both appear in
+        // real lockfiles. An earlier version of this parser rejected them, which
+        // the local corpus could not catch because this registry publishes no
+        // such versions — it only surfaced once resolution went through the
+        // vendored upstream snapshot.
         let release = parse_identifiers(s, release_str)?;
-        // Release components must be numeric — this is what distinguishes a
-        // release from a prerelease identifier upstream.
-        for (raw, id) in release_str.split('.').zip(release.iter()) {
-            if matches!(id, Identifier::Alphanumeric(_)) {
-                return Err(VersionError::NonNumericRelease(
-                    s.to_string(),
-                    raw.to_string(),
-                ));
-            }
-        }
 
         let prerelease = match prerelease_str {
             Some(p) => parse_identifiers(s, p)?,
@@ -356,11 +351,19 @@ mod tests {
     }
 
     #[test]
-    fn rejects_non_numeric_release_components() {
-        assert!(matches!(
-            Version::parse("1.x.0"),
-            Err(VersionError::NonNumericRelease(..))
-        ));
+    fn accepts_the_bcr_re_release_convention() {
+        // `.bcr.N` marks a BCR re-release of an upstream version. Rejecting it
+        // makes every module depending on zlib or gawk unresolvable, which is
+        // most of the protobuf closure.
+        let z = v("1.3.1.bcr.5");
+        assert_eq!(z.to_string(), "1.3.1.bcr.5");
+        // A re-release sorts ABOVE the version it re-releases...
+        assert!(v("1.3.1") < z);
+        // ...and below the next real version.
+        assert!(z < v("1.3.2"));
+        // Rule 3 still applies within the release segment: numeric below alpha.
+        assert!(v("1.3.1.4") < z);
+        assert!(v("5.3.2") < v("5.3.2.bcr.1"));
     }
 
     #[test]
