@@ -32,7 +32,7 @@ pub mod parse;
 pub mod registry;
 pub mod version;
 
-pub use graph::{resolve, ModuleGraph, ModuleKey, Resolution};
+pub use graph::{resolve, resolve_with, ModuleGraph, ModuleKey, Resolution};
 pub use parse::{parse, BazelDep, ModuleDecl, ModuleFile, Override};
 pub use registry::{FsRegistry, Metadata, MultiRegistry, Registry, SourceJson};
 pub use version::{Version, VersionError};

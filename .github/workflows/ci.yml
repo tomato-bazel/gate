@@ -46,3 +46,26 @@ jobs:
           find . -name vendor -prune -o -name testdata -prune -o \
                  \( -name '*.bzl' -o -name 'BUILD.bazel' -o -name 'MODULE.bazel' \) -print \
             | xargs buildifier --mode=check --lint=warn
+
+  # The vendored upstream snapshot must match what upstream actually publishes,
+  # and must match the Bazel release in use — bazel_tools ships inside the
+  # binary, so upgrading Bazel changes the implicit dependency set and silently
+  # changes MVS results. .bazelversion pins that; this job proves the snapshot
+  # was regenerated for it.
+  #
+  # Read-only: --check fetches and compares, and writes nothing.
+  snapshot:
+    name: vendored snapshot is current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.10.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}-snapshot
+          repository-cache: true
+      - name: Clone the registry (public, no auth)
+        run: git clone --depth 1 https://github.com/tomato-bazel/bazel-registry.git _registry
+      - run: |
+          bazel run //crates/gate-snapshot:snapshot -- \
+            --registry "$PWD/_registry" --out "$PWD/vendor/bcr" --check

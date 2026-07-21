@@ -35,7 +35,7 @@
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
 
-use bzlmod::graph::{resolve, ModuleGraph, ModuleKey};
+use bzlmod::graph::{resolve_with, ModuleGraph, ModuleKey};
 use bzlmod::registry::Registry;
 use bzlmod::Version;
 
@@ -161,10 +161,12 @@ fn emit_module(
         };
         writeln!(out, "    {pred} {} ;", module_iri(&dep.name, &dep.version))?;
         let key = (dep.name.clone(), dep.version.to_string());
-        let is_external = graph
-            .get(&ModuleKey::new(dep.name.clone(), dep.version.clone()))
-            .map(|r| r.is_external())
-            .unwrap_or(true);
+        // Externality is "not published by THIS registry" — deliberately NOT
+        // "unresolvable". Before the vendored snapshot the two coincided, so
+        // reading it off the graph worked. It no longer does: with the snapshot
+        // present every third-party module resolves, `Resolution::External`
+        // becomes empty, and every C-family gate silently matches nothing.
+        let is_external = reg.version_dirs(&dep.name).map(|v| v.is_empty()).unwrap_or(true);
         referenced.entry(key).or_insert(is_external);
     }
 
@@ -245,8 +247,8 @@ fn emit_module(
         if *name == root.name {
             continue;
         }
-        let key = ModuleKey::new(name.clone(), version.clone());
-        let external = graph.get(&key).map(|r| r.is_external()).unwrap_or(false);
+        // Same rule as above: published-by-us, not resolvable.
+        let external = reg.version_dirs(name).map(|v| v.is_empty()).unwrap_or(true);
         let iri = format!(
             "<{SELECTION_NS}{}/{}/{name}>",
             root.name,
@@ -310,6 +312,13 @@ pub fn project_registry(
     out.push_str("# Facts only — no policy. Every gate is a .rq under //gates.\n");
     out.push_str(PREFIXES);
 
+    // bazel_tools, when the resolver has it: an implicit dependency of every
+    // module graph that ships inside the Bazel binary rather than a registry.
+    let implicit: Vec<ModuleKey> = match resolver.latest("bazel_tools") {
+        Ok(Some(v)) => vec![ModuleKey::new("bazel_tools", v)],
+        _ => Vec::new(),
+    };
+
     let mut unresolved = Vec::new();
     // Every (name, version) any module points at, external or not. Identity
     // triples are emitted once at the end so a dep edge can be joined to its
@@ -331,7 +340,7 @@ pub fn project_registry(
             }
         };
         let key = ModuleKey::new(name.clone(), latest);
-        match resolve(resolver, key.clone()) {
+        match resolve_with(resolver, key.clone(), &implicit) {
             Ok(g) => emit_module(&mut out, &g, publisher, true, &mut referenced)?,
             Err(e) => unresolved.push(format!("{key}: {e}")),
         }

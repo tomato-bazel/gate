@@ -45,6 +45,15 @@ struct Args {
     out: PathBuf,
     upstream: String,
     check: bool,
+    /// Bazel's builtin `bazel_tools` module, normally
+    /// `$(bazel info install_base)/embedded_tools/MODULE.bazel`. Auto-detected
+    /// when Bazel is on PATH.
+    bazel_tools: Option<PathBuf>,
+    /// Version to file `bazel_tools` under. It declares none of its own, so the
+    /// Bazel release is the honest key: upgrading Bazel changes the content,
+    /// and filing it under the release makes that show up as snapshot drift
+    /// rather than silently changing resolution.
+    bazel_version: Option<String>,
 }
 
 fn parse_args() -> anyhow::Result<Args> {
@@ -52,6 +61,8 @@ fn parse_args() -> anyhow::Result<Args> {
     let mut out = None;
     let mut upstream = DEFAULT_UPSTREAM.to_string();
     let mut check = false;
+    let mut bazel_tools = None;
+    let mut bazel_version = None;
     let mut it = std::env::args().skip(1);
     while let Some(a) = it.next() {
         let mut next = || {
@@ -63,6 +74,8 @@ fn parse_args() -> anyhow::Result<Args> {
             "--out" => out = Some(PathBuf::from(next()?)),
             "--upstream" => upstream = next()?,
             "--check" => check = true,
+            "--bazel-tools" => bazel_tools = Some(PathBuf::from(next()?)),
+            "--bazel-version" => bazel_version = Some(next()?),
             other => anyhow::bail!("unknown flag {other}"),
         }
     }
@@ -71,7 +84,30 @@ fn parse_args() -> anyhow::Result<Args> {
         out: out.ok_or_else(|| anyhow::anyhow!("--out is required"))?,
         upstream,
         check,
+        bazel_tools,
+        bazel_version,
     })
+}
+
+/// Locate Bazel's builtin `bazel_tools` module and the release it belongs to.
+fn detect_bazel_tools() -> Option<(PathBuf, String)> {
+    let out = std::process::Command::new("bazel")
+        .arg("info")
+        .arg("install_base")
+        .output()
+        .ok()?;
+    let base = PathBuf::from(String::from_utf8(out.stdout).ok()?.trim());
+    let module = base.join("embedded_tools").join("MODULE.bazel");
+    if !module.is_file() {
+        return None;
+    }
+    let ver = std::process::Command::new("bazel")
+        .arg("--version")
+        .output()
+        .ok()?;
+    let ver = String::from_utf8(ver.stdout).ok()?;
+    let ver = ver.split_whitespace().nth(1)?.to_string();
+    Some((module, ver))
 }
 
 /// Every third-party `(name, version)` the local registry depends on directly.
@@ -115,8 +151,37 @@ fn main() -> anyhow::Result<()> {
         .timeout(std::time::Duration::from_secs(30))
         .build()?;
 
-    let seeds = seeds(&local)?;
+    let mut seeds = seeds(&local)?;
     eprintln!("snapshot: {} frontier seeds", seeds.len());
+
+    // bazel_tools is an implicit dependency of EVERY module graph and ships
+    // inside the Bazel binary rather than in a registry. Its requirements are
+    // newer than anything this registry declares — protobuf 33.4, rules_java
+    // 9.1.0, rules_cc 0.2.17 — so omitting it makes MVS select systematically
+    // lower versions than Bazel does.
+    let bt = match (&args.bazel_tools, &args.bazel_version) {
+        (Some(p), Some(v)) => Some((p.clone(), v.clone())),
+        _ => detect_bazel_tools(),
+    };
+    let mut bazel_tools_entry: Option<(String, String)> = None;
+    match &bt {
+        Some((path, version)) => {
+            let text = std::fs::read_to_string(path)?;
+            let file = bzlmod::parse("bazel_tools/MODULE.bazel", &text)?;
+            for dep in file.runtime_deps() {
+                seeds.insert((dep.name.clone(), dep.version.clone()));
+            }
+            eprintln!(
+                "snapshot: bazel_tools from Bazel {version} contributes {} seeds",
+                file.runtime_deps().count()
+            );
+            bazel_tools_entry = Some((version.clone(), text));
+        }
+        None => eprintln!(
+            "snapshot: WARNING no bazel_tools found — MVS will under-resolve. \
+             Pass --bazel-tools and --bazel-version."
+        ),
+    }
 
     // BFS over the dependency graph. Parsed with the real MODULE.bazel
     // evaluator, not a regex — a regex sweep over these files picks up
@@ -186,6 +251,10 @@ fn main() -> anyhow::Result<()> {
         bytes / 1024,
         absent.len()
     );
+
+    if let Some((version, text)) = &bazel_tools_entry {
+        found.insert(("bazel_tools".to_string(), Version::parse(version)?), text.clone());
+    }
 
     if args.check {
         return check(&args.out, &found);

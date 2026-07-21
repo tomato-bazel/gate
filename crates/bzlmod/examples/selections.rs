@@ -8,8 +8,21 @@
 //!
 //!     cargo run -p bzlmod --example selections -- <registry> <module> [version]
 
-use bzlmod::graph::{resolve, ModuleKey};
+use bzlmod::graph::{resolve_with, ModuleKey};
 use bzlmod::registry::{FsRegistry, MultiRegistry, Registry};
+
+
+/// The `bazel_tools` entry in the vendored snapshot, if present.
+///
+/// Bazel injects this into every module graph; it is not declared anywhere and
+/// ships inside the binary. Resolving without it selects systematically lower
+/// versions than Bazel does.
+fn implicit_deps(reg: &dyn Registry) -> Vec<ModuleKey> {
+    match reg.latest("bazel_tools") {
+        Ok(Some(v)) => vec![ModuleKey::new("bazel_tools", v)],
+        _ => Vec::new(),
+    }
+}
 
 fn main() -> anyhow::Result<()> {
     let mut positional = Vec::new();
@@ -50,7 +63,12 @@ fn main() -> anyhow::Result<()> {
         }
         None => &reg,
     };
-    let g = resolve(resolver, ModuleKey::new(module.clone(), version.clone()))?;
+    let implicit = implicit_deps(resolver);
+    let g = resolve_with(
+        resolver,
+        ModuleKey::new(module.clone(), version.clone()),
+        &implicit,
+    )?;
 
     let mut out = serde_json::Map::new();
     for (name, v) in g.selections() {

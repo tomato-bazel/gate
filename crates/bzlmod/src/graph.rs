@@ -184,6 +184,30 @@ impl ModuleGraph {
 
 /// Resolve the module graph rooted at `root`.
 pub fn resolve(registry: &dyn Registry, root: ModuleKey) -> anyhow::Result<ModuleGraph> {
+    resolve_with(registry, root, &[])
+}
+
+/// Resolve with additional **implicit** root dependencies.
+///
+/// Bazel injects `bazel_tools` into every module graph. It is not declared in
+/// any `MODULE.bazel` and does not live in a registry — it ships inside the
+/// Bazel binary at `embedded_tools/MODULE.bazel` — so a resolver that only
+/// reads declared edges silently under-resolves.
+///
+/// The effect is not marginal. `bazel_tools` requires `protobuf 33.4`,
+/// `rules_java 9.1.0`, `rules_cc 0.2.17`, `bazel_features 1.42.1` and
+/// `abseil-cpp 20250814.1`, all newer than anything this registry declares, so
+/// MVS selects *those* — and a resolver missing them reports systematically
+/// lower versions than Bazel does.
+///
+/// Injected at the root only, not at every node. MVS is max-of-the-minimums, so
+/// a requirement entering the pool once selects the same version as entering it
+/// n times; the resulting selections are identical and the graph is smaller.
+pub fn resolve_with(
+    registry: &dyn Registry,
+    root: ModuleKey,
+    implicit: &[ModuleKey],
+) -> anyhow::Result<ModuleGraph> {
     // Selected versions, seeded with the root pinned to its own version.
     let mut selected: BTreeMap<String, Version> = BTreeMap::new();
     selected.insert(root.name.clone(), root.version.clone());
@@ -212,6 +236,21 @@ pub fn resolve(registry: &dyn Registry, root: ModuleKey) -> anyhow::Result<Modul
         let mut visited: BTreeSet<ModuleKey> = BTreeSet::new();
         let mut queue: VecDeque<ModuleKey> = VecDeque::new();
         queue.push_back(root.clone());
+        for imp in implicit {
+            // Walk at the selected version once selection has moved it, exactly
+            // as declared deps are walked.
+            let at = selected
+                .get(&imp.name)
+                .cloned()
+                .unwrap_or_else(|| imp.version.clone());
+            let key = ModuleKey::new(imp.name.clone(), at);
+            edges.insert((root.clone(), key.clone()));
+            requirements
+                .entry(imp.name.clone())
+                .or_default()
+                .insert(imp.version.clone());
+            queue.push_back(key);
+        }
 
         while let Some(key) = queue.pop_front() {
             if !visited.insert(key.clone()) {
