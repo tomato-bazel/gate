@@ -1,0 +1,68 @@
+# gate — registry admission gating for tomato-bazel.
+#
+# Rust does extraction only: evaluate MODULE.bazel, resolve the module graph,
+# fetch archives, project the whole thing to RDF. Every actual *gate* is a
+# Bazel target — a `sparql_query_test` over that projection (see //gates) — so
+# policy lives as data in `.rq` files rather than compiled into a binary.
+#
+# Built with @rules_rust + crate_universe over the cargo workspace (the same
+# Cargo.toml/Cargo.lock cargo uses), mirroring cred-helper and
+# bazel-registry//tools/rels.
+# No `compatibility_level`: it and `max_compatibility_level` are NO-OPS as of
+# Bazel 8.6.0 / 9.1.0, and Bazel 9.2 warns that the attribute will be removed.
+# Upstream dropped it because raising the level produced version conflicts end
+# users could not resolve. Consequence for this repo: there is no longer any
+# in-band way for a module to signal a breaking change, so MVS will silently
+# upgrade a consumer across one. Preventing that is now the REGISTRY's job —
+# see the C1 single-version invariant.
+module(
+    name = "gate",
+    version = "0.0.1",
+)
+
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "rules_rust", version = "0.70.0")
+
+# The gate primitives. `sparql_query_test` is a zero-row gate: run a `.rq` and
+# fail if the result set is non-empty. rules_jena supplies the Jena-backed
+# implementations of the SPARQL + SHACL toolchain types rules_rdf declares.
+#
+# NOTE — bootstrap circularity: both of these are modules this registry
+# governs, so they are the gate's TRUSTED ROOT. They are pinned exactly, are
+# certified out-of-band, and must not float. Until those pins carry
+# certificates the gate is not self-hosting; that is a known, accepted state
+# and is tracked as a 1.0.0 release criterion.
+bazel_dep(name = "rules_rdf", version = "0.3.0")
+bazel_dep(name = "rules_jena", version = "0.3.2")
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(edition = "2021")
+use_repo(rust, "rust_toolchains")
+
+register_toolchains("@rust_toolchains//:all")
+
+# @gate_crates — the crate_universe for //crates/*, resolved from the workspace
+# Cargo.toml + Cargo.lock.
+#
+# NAMESPACED deliberately: `crate.from_cargo(name = "crates")` is what 14
+# registry modules do today, and it is exactly the D3 hazard this repo exists
+# to detect (`@rules_rust//crate_universe` is a shared extension, so the repo
+# it generates is shared across the module graph). Naming it `gate_crates`
+# means a consumer can never collide with us.
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+#
+# `manifests` lists ONLY the workspace root. rules_rust 0.70 discovers members
+# from `[workspace] members`, and listing `//crates/bzlmod:Cargo.toml` here
+# instead creates a bootstrap cycle: resolving that label loads the package,
+# whose BUILD.bazel calls `all_crate_deps`, which needs this repo to exist.
+crate.from_cargo(
+    name = "gate_crates",
+    cargo_lockfile = "//:Cargo.lock",
+    manifests = ["//:Cargo.toml"],
+)
+use_repo(crate, "gate_crates")
+
+# Dev-only: docs + stardoc for the //gates rule wrappers.
+bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
+bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True)

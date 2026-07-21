@@ -1,0 +1,31 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/bzlmod",
+]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/tomato-bazel/gate"
+
+[workspace.dependencies]
+anyhow = "1"
+thiserror = "2"
+
+# The Starlark interpreter. Pinned to the same release roma uses
+# (crates/roma-starlark) so `bzlmod` can be lifted into roma as its B1 without a
+# version negotiation. Keep these three bumped together — `allocative` must match
+# starlark's own pin.
+starlark = "0.14.2"
+starlark_syntax = "0.14.2"
+allocative = "0.3.6"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = "symbols"
