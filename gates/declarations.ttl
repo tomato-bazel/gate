@@ -1,0 +1,12 @@
+# Hand-maintained policy input: modules that are LEGITIMATELY toolchain
+# providers, and therefore exempt from D2.
+#
+# Being a toolchain implementation is the module's stated purpose — registering
+# is what it is for. Everything else registering a non-dev toolchain is imposing
+# it on every transitive consumer, usually by accident.
+#
+# This is deliberately a small, reviewable allowlist rather than a heuristic in
+# the query: an exemption should require someone to write the module's name down.
+@prefix gate: <https://tbzl.dev/ns/gate#> .
+
+<https://tbzl.dev/m/rules_jena/0.3.2> gate:declaredToolchainProvider true .

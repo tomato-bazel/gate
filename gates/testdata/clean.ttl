@@ -1,0 +1,63 @@
+# A registry snapshot that violates nothing. Every gate must return zero rows
+# against this, which is what proves a passing gate means "no violations"
+# rather than "the query is broken".
+@prefix gate: <https://tbzl.dev/ns/gate#> .
+
+# An ordinary rules module: no overrides, no toolchain registration, and its
+# one chosen repo on a shared extension is namespaced.
+<https://tbzl.dev/m/rules_good/1.0.0> a gate:ModuleVersion, gate:RulesModule ;
+    gate:name "rules_good" ;
+    gate:version "1.0.0" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "rules_good", "good" ;
+    gate:usesExtension <https://tbzl.dev/ext/rules_good/1.0.0/0> ;
+    gate:dependsOn <https://tbzl.dev/m/platforms/1.0.0> .
+
+<https://tbzl.dev/ext/rules_good/1.0.0/0> a gate:ExtensionUsage ;
+    gate:extBzlFile "@rules_oci//oci:extensions.bzl" ;
+    gate:extName "oci" ;
+    gate:extIsForeign true ;
+    gate:introducesRepo "good_base" ;
+    gate:choseRepo "good_base" ;
+    gate:ofModule <https://tbzl.dev/m/rules_good/1.0.0> .
+
+# A declared toolchain provider: registers non-dev, and is exempt because
+# declarations.ttl says so.
+<https://tbzl.dev/m/rules_jena/0.3.2> a gate:ModuleVersion, gate:RulesModule ;
+    gate:name "rules_jena" ;
+    gate:version "0.3.2" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "rules_jena", "jena" ;
+    gate:registersToolchain "//jena:jena_sparql_toolchain_def" .
+
+# Extension singletons are not "chosen" names, so they are not D3 candidates.
+<https://tbzl.dev/m/rules_singleton/1.0.0> a gate:ModuleVersion, gate:RulesModule ;
+    gate:name "rules_singleton" ;
+    gate:version "1.0.0" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "rules_singleton", "singleton" ;
+    gate:usesExtension <https://tbzl.dev/ext/rules_singleton/1.0.0/0> .
+
+<https://tbzl.dev/ext/rules_singleton/1.0.0/0> a gate:ExtensionUsage ;
+    gate:extBzlFile "@rules_rust//rust:extensions.bzl" ;
+    gate:extName "rust" ;
+    gate:extIsForeign true ;
+    gate:introducesRepo "rust_toolchains" ;
+    gate:ofModule <https://tbzl.dev/m/rules_singleton/1.0.0> .
+
+# One atom, one version, across both selections.
+<https://tbzl.dev/sel/rules_good/1.0.0/platforms> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_good/1.0.0> ;
+    gate:selectionAtom "platforms" ;
+    gate:selectionVersion "1.0.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/rules_singleton/1.0.0/platforms> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/rules_singleton/1.0.0> ;
+    gate:selectionAtom "platforms" ;
+    gate:selectionVersion "1.0.0" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/m/platforms/1.0.0> gate:name "platforms" ;
+    gate:version "1.0.0" ;
+    gate:isExternal true .

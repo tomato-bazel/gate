@@ -1,0 +1,32 @@
+# C1 — one live version per third-party atom.
+#
+# This is the convergence invariant, and since Bazel 8.6.0/9.1.0 it is also the
+# COMPATIBILITY invariant. `compatibility_level` is now a no-op, so MVS will
+# silently upgrade a consumer across a breaking change and Bazel cannot object.
+# One version per atom means no incompatible co-selection is possible — which
+# makes this the only thing standing between a consumer and a silent break.
+#
+# Compares MVS results across every module graph in the registry, so it catches
+# transitive divergence a scan of declared pins would miss.
+PREFIX gate: <https://tbzl.dev/ns/gate#>
+
+# NOTE on the FILTER: string comparison is a CANONICAL-ORDERING device, not a
+# semver claim. It exists only to emit each pair once and drop self-pairs.
+# SPARQL cannot order bzlmod versions correctly — lexically "8.15.2" < "8.6.1"
+# while semantically 8.6.1 < 8.15.2 — so the columns are deliberately named
+# ?version_a / ?version_b rather than lower/higher. Any two distinct versions
+# is the violation; which one is newer is a question for `bzlmod::Version`, and
+# labelling these as ordered would be a lie a remediator might act on.
+SELECT DISTINCT ?atom ?version_a ?version_b
+WHERE {
+  ?s1 a gate:Selection ;
+      gate:selectionAtom ?atom ;
+      gate:selectionVersion ?version_a ;
+      gate:selectionExternal true .
+  ?s2 a gate:Selection ;
+      gate:selectionAtom ?atom ;
+      gate:selectionVersion ?version_b ;
+      gate:selectionExternal true .
+  FILTER(STR(?version_a) < STR(?version_b))
+}
+ORDER BY ?atom ?version_a ?version_b

@@ -1,0 +1,113 @@
+"""The gates themselves — one `.rq` per invariant, evaluated by rules_rdf.
+
+`sparql_query_test` is a ZERO-ROW gate: it runs the query and fails the build
+if the result set is non-empty. So a gate is one query file plus one target,
+adding an invariant needs no Rust rebuild, and when a gate fails the returned
+rows *are* the counterexample.
+
+Each gate is wired twice, because a zero-row gate has one dangerous failure
+mode: a query that matches nothing because it is MALFORMED looks exactly like
+one that matches nothing because the data is clean.
+
+  * `<gate>_passes_on_clean`  — zero rows against a fixture with no violations.
+  * `<gate>_detects`          — the query is run over a fixture with KNOWN
+                                violations and the result diffed against a
+                                committed golden, so both over- and
+                                under-matching fail.
+
+The real registry projection (`testdata/registry.ttl`) is deliberately NOT
+wired to a test. It currently violates every one of these, which is the whole
+premise of the remediation programme — it is exposed as `report_*` targets to
+`bazel run`, and becomes a test when the corpus is green.
+"""
+
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load("@rules_rdf//rdf:dataset.bzl", "rdf_dataset")
+load("@rules_rdf//sparql:defs.bzl", "sparql_query", "sparql_query_smoke_test", "sparql_query_test")
+
+package(default_visibility = ["//visibility:public"])
+
+GATES = [
+    "s4_no_override_in_published_module",
+    "d2_undeclared_toolchain_leak",
+    "d3_unnamespaced_extension_repo",
+    "c1_atom_multi_version",
+]
+
+exports_files([g + ".rq" for g in GATES] + ["declarations.ttl"])
+
+# declarations.ttl is policy input, not a fact: the reviewable allowlist of
+# modules that are legitimately toolchain providers. It joins every dataset so
+# a gate can consult it.
+rdf_dataset(
+    name = "declarations",
+    srcs = ["declarations.ttl"],
+)
+
+rdf_dataset(
+    name = "clean",
+    srcs = ["testdata/clean.ttl"],
+    deps = [":declarations"],
+)
+
+rdf_dataset(
+    name = "violations",
+    srcs = ["testdata/violations.ttl"],
+    deps = [":declarations"],
+)
+
+# The projection of the live registry, produced by `tbzl-gate project`.
+rdf_dataset(
+    name = "registry",
+    srcs = ["testdata/registry.ttl"],
+    deps = [":declarations"],
+)
+
+# Every query must parse and execute. Catches a syntax error in a gate that is
+# currently returning zero rows for the right reason.
+sparql_query_smoke_test(
+    name = "all_gates_parse",
+    dataset = ":clean",
+    queries = [g + ".rq" for g in GATES],
+)
+
+[
+    sparql_query_test(
+        name = g + "_passes_on_clean",
+        dataset = ":clean",
+        query = g + ".rq",
+    )
+    for g in GATES
+]
+
+[
+    sparql_query(
+        name = g + "_on_violations",
+        out_format = "tsv",
+        dataset = ":violations",
+        query = g + ".rq",
+    )
+    for g in GATES
+]
+
+[
+    diff_test(
+        name = g + "_detects",
+        file1 = ":" + g + "_on_violations",
+        file2 = "testdata/" + g + ".expected.tsv",
+    )
+    for g in GATES
+]
+
+# Reporting over the live registry. `bazel run //gates:report_<gate>` prints
+# what that gate would flag today. Not tests — the corpus is not green yet, and
+# a red //... would train everyone to ignore it.
+[
+    sparql_query(
+        name = "report_" + g,
+        out_format = "tsv",
+        dataset = ":registry",
+        query = g + ".rq",
+    )
+    for g in GATES
+]

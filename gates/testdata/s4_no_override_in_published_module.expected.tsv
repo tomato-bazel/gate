@@ -1,0 +1,3 @@
+?module	?version	?directive	?target
+"bad_overrides"	"0.0.1"	"local_path_override"	"rules_jena"
+"bad_overrides"	"0.0.1"	"local_path_override"	"rules_rdf"

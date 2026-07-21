@@ -1,0 +1,2 @@
+?module	?repo	?extension
+"vpn"	"distroless_java"	"@rules_oci//oci:extensions.bzl"

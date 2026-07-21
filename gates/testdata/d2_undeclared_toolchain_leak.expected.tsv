@@ -1,0 +1,2 @@
+?module	?version	?toolchain
+"bad_toolchain"	"0.0.1"	"@rust_toolchains//:all"

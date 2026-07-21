@@ -1,0 +1,65 @@
+# One known violation per gate. Asserting the EXACT rows each query returns is
+# what stops a malformed query from masquerading as a passing gate — the main
+# failure mode of a zero-row gate, since a query that matches nothing because
+# it is wrong looks identical to one that matches nothing because the data is
+# clean.
+@prefix gate: <https://tbzl.dev/ns/gate#> .
+
+# --- S4: two overrides on one module. -----------------------------------------
+# Also the cartesian-product regression: overrides are reified as nodes, so
+# this must yield 2 rows, not 4.
+<https://tbzl.dev/m/bad_overrides/0.0.1> a gate:ModuleVersion ;
+    gate:name "bad_overrides" ;
+    gate:version "0.0.1" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "bad_overrides" ;
+    gate:hasOverride <https://tbzl.dev/ovr/bad_overrides/0.0.1/0>,
+                     <https://tbzl.dev/ovr/bad_overrides/0.0.1/1> .
+
+<https://tbzl.dev/ovr/bad_overrides/0.0.1/0> a gate:Override ;
+    gate:overrideOf <https://tbzl.dev/m/bad_overrides/0.0.1> ;
+    gate:overrideDirective "local_path_override" ;
+    gate:overrideTarget "rules_jena" .
+
+<https://tbzl.dev/ovr/bad_overrides/0.0.1/1> a gate:Override ;
+    gate:overrideOf <https://tbzl.dev/m/bad_overrides/0.0.1> ;
+    gate:overrideDirective "local_path_override" ;
+    gate:overrideTarget "rules_rdf" .
+
+# --- D2: leaks a toolchain, not a declared provider. --------------------------
+<https://tbzl.dev/m/bad_toolchain/0.0.1> a gate:ModuleVersion ;
+    gate:name "bad_toolchain" ;
+    gate:version "0.0.1" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "bad_toolchain" ;
+    gate:registersToolchain "@rust_toolchains//:all" ;
+    gate:registersToolchainDev "@only_mine//:all" .
+
+# --- D3: the live vpn violation, same extension as the rules_k8s bug. ---------
+<https://tbzl.dev/m/vpn/0.0.1> a gate:ModuleVersion ;
+    gate:name "vpn" ;
+    gate:version "0.0.1" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "vpn" ;
+    gate:usesExtension <https://tbzl.dev/ext/vpn/0.0.1/0> .
+
+<https://tbzl.dev/ext/vpn/0.0.1/0> a gate:ExtensionUsage ;
+    gate:extBzlFile "@rules_oci//oci:extensions.bzl" ;
+    gate:extName "oci" ;
+    gate:extIsForeign true ;
+    gate:introducesRepo "distroless_java" ;
+    gate:choseRepo "distroless_java" ;
+    gate:ofModule <https://tbzl.dev/m/vpn/0.0.1> .
+
+# --- C1: one atom selected at two versions across two roots. ------------------
+<https://tbzl.dev/sel/a/1.0.0/rules_java> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/bad_overrides/0.0.1> ;
+    gate:selectionAtom "rules_java" ;
+    gate:selectionVersion "8.6.1" ;
+    gate:selectionExternal true .
+
+<https://tbzl.dev/sel/b/1.0.0/rules_java> a gate:Selection ;
+    gate:selectionRoot <https://tbzl.dev/m/bad_toolchain/0.0.1> ;
+    gate:selectionAtom "rules_java" ;
+    gate:selectionVersion "9.1.0" ;
+    gate:selectionExternal true .

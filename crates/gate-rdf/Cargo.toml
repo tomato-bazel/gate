@@ -1,0 +1,15 @@
+[package]
+name = "gate-rdf"
+description = "Project a bzlmod registry to RDF. Facts only — every gate is a .rq under //gates."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "project"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+bzlmod = { path = "../bzlmod" }
