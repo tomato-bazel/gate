@@ -9,15 +9,15 @@
 //! one of these modules is remediated upstream the fixture does **not** get
 //! refreshed — it is pinned evidence of the shape the gate must catch.
 
-const D3_AFTER: &str = include_str!("../testdata/d3_after.MODULE.bazel");
-const D3_LIVE_VIOLATION: &str = include_str!("../testdata/d3_live_violation.MODULE.bazel");
+const D3_AFTER: &str = include_str!("../testdata/d3_after.MODULE.bazel.fixture");
+const D3_LIVE_VIOLATION: &str = include_str!("../testdata/d3_live_violation.MODULE.bazel.fixture");
 const FOREIGN_EXT_NAMESPACED: &str =
-    include_str!("../testdata/foreign_ext_namespaced.MODULE.bazel");
+    include_str!("../testdata/foreign_ext_namespaced.MODULE.bazel.fixture");
 const S4_LOCAL_PATH_OVERRIDE: &str =
-    include_str!("../testdata/s4_local_path_override.MODULE.bazel");
+    include_str!("../testdata/s4_local_path_override.MODULE.bazel.fixture");
 const DEV_DEPS_AND_TOOLCHAINS: &str =
-    include_str!("../testdata/dev_deps_and_toolchains.MODULE.bazel");
-const COMPLEX: &str = include_str!("../testdata/complex.MODULE.bazel");
+    include_str!("../testdata/dev_deps_and_toolchains.MODULE.bazel.fixture");
+const COMPLEX: &str = include_str!("../testdata/complex.MODULE.bazel.fixture");
 
 fn parse(name: &str, text: &str) -> bzlmod::ModuleFile {
     bzlmod::parse(name, text).unwrap_or_else(|e| panic!("{name}: {e}"))

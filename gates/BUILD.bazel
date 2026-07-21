@@ -21,10 +21,10 @@ premise of the remediation programme — it is exposed as `report_*` targets to
 `bazel run`, and becomes a test when the corpus is green.
 """
 
-load("//gates:report.bzl", "gate_report")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@rules_rdf//rdf:dataset.bzl", "rdf_dataset")
 load("@rules_rdf//sparql:defs.bzl", "sparql_query", "sparql_query_smoke_test", "sparql_query_test")
+load("//gates:report.bzl", "gate_report")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -84,8 +84,8 @@ sparql_query_smoke_test(
 [
     sparql_query(
         name = g + "_on_violations",
-        out_format = "tsv",
         dataset = ":violations",
+        out_format = "tsv",
         query = g + ".rq",
     )
     for g in GATES
@@ -106,8 +106,8 @@ sparql_query_smoke_test(
 [
     sparql_query(
         name = "report_" + g,
-        out_format = "tsv",
         dataset = ":registry",
+        out_format = "tsv",
         query = g + ".rq",
     )
     for g in GATES
@@ -142,8 +142,8 @@ REPORT_QUERIES = GATES + [
 [
     sparql_query(
         name = "rows_" + q,
-        out_format = "tsv",
         dataset = ":registry",
+        out_format = "tsv",
         query = q + ".rq",
     )
     for q in REPORT_QUERIES

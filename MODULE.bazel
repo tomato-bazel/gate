@@ -56,6 +56,7 @@ register_toolchains("@rust_toolchains//:all")
 # it generates is shared across the module graph). Naming it `gate_crates`
 # means a consumer can never collide with us.
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+
 #
 # `manifests` lists ONLY the workspace root. rules_rust 0.70 discovers members
 # from `[workspace] members`, and listing `//crates/bzlmod:Cargo.toml` here
