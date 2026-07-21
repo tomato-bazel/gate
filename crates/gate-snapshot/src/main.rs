@@ -110,6 +110,25 @@ fn detect_bazel_tools() -> Option<(PathBuf, String)> {
     Some((module, ver))
 }
 
+/// The `bazel_tools` entry already committed to the snapshot, as (path, version).
+///
+/// Makes `--check` a pure function of the checkout: it replays the exact
+/// implicit-dependency input the snapshot was built with, instead of asking
+/// whatever Bazel happens to be installed.
+fn snapshot_bazel_tools(out: &Path) -> Option<(PathBuf, String)> {
+    let dir = out.join("modules").join("bazel_tools");
+    let mut versions: Vec<String> = std::fs::read_dir(&dir)
+        .ok()?
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().is_dir())
+        .map(|e| e.file_name().to_string_lossy().into_owned())
+        .collect();
+    versions.sort();
+    let version = versions.pop()?;
+    let path = dir.join(&version).join("MODULE.bazel");
+    path.is_file().then_some((path, version))
+}
+
 /// Every third-party `(name, version)` the local registry depends on directly.
 ///
 /// Derived by resolving each published module rather than scraping pins, so a
@@ -159,9 +178,22 @@ fn main() -> anyhow::Result<()> {
     // newer than anything this registry declares — protobuf 33.4, rules_java
     // 9.1.0, rules_cc 0.2.17 — so omitting it makes MVS select systematically
     // lower versions than Bazel does.
-    let bt = match (&args.bazel_tools, &args.bazel_version) {
-        (Some(p), Some(v)) => Some((p.clone(), v.clone())),
-        _ => detect_bazel_tools(),
+    // In --check mode, read bazel_tools from the SNAPSHOT rather than
+    // re-detecting it from the local Bazel. Detection shells out to
+    // `bazel info install_base`, so the closure it derives depends on the
+    // machine running the check — which is precisely the non-determinism the
+    // snapshot exists to remove, and it made CI disagree with a developer's
+    // laptop on a set of ~10 module versions.
+    //
+    // The snapshot is self-describing: re-vendoring detects from the local
+    // Bazel and records what it found; checking replays that recorded input.
+    let bt = if args.check {
+        snapshot_bazel_tools(&args.out)
+    } else {
+        match (&args.bazel_tools, &args.bazel_version) {
+            (Some(p), Some(v)) => Some((p.clone(), v.clone())),
+            _ => detect_bazel_tools(),
+        }
     };
     let mut bazel_tools_entry: Option<(String, String)> = None;
     match &bt {
