@@ -549,31 +549,41 @@ impl Report {
         }
     }
 
+    /// mdBook's `SUMMARY.md`.
+    ///
+    /// Uses mdBook's own structure rather than an ad-hoc nested list: entries
+    /// before the first list are PREFIX chapters, and `# Heading` lines are
+    /// part dividers. An earlier version linked `index.md` three times as
+    /// pseudo-headings, which mdBook renders as three duplicate chapters
+    /// pointing at the same page.
     fn summary(&self, pages: &[Page]) -> Page {
         let mut b = String::new();
         b.push_str("# Summary\n\n");
-        b.push_str("- [Registry conformance](index.md)\n");
-        b.push_str("- [Third-party atoms](atoms.md)\n");
-        b.push_str("- [Invariants](index.md)\n");
+        b.push_str("[Registry conformance](index.md)\n");
+        b.push_str("[Third-party atoms](atoms.md)\n");
+
+        b.push_str("\n# Invariants\n\n");
         for g in &self.gates {
             let _ = writeln!(
                 b,
-                "  - [{} — {}](gates/{}.md)",
+                "- [{} — {}](gates/{}.md)",
                 g.code(),
                 md_escape(&g.title),
                 g.id
             );
         }
-        b.push_str("- [Modules](index.md)\n");
+
+        b.push_str("\n# Modules\n\n");
         for p in pages {
             if let Some(name) = p
                 .path
                 .strip_prefix("modules/")
                 .and_then(|s| s.strip_suffix(".md"))
             {
-                let _ = writeln!(b, "  - [{name}](modules/{name}.md)");
+                let _ = writeln!(b, "- [{name}](modules/{name}.md)");
             }
         }
+
         Page {
             path: "SUMMARY.md".into(),
             body: b,

@@ -1,0 +1,18 @@
+[book]
+title = "tomato-bazel registry conformance"
+authors = ["Matt Marshall"]
+src = "src"
+language = "en"
+
+# `src/` is GENERATED — `bazel build //gates:report` writes it, and the CI job
+# copies the tree artifact here before rendering. Nothing in it is hand-edited,
+# which is why it is gitignored: the report is a function of the registry, and a
+# committed copy would be stale the moment a module is published.
+[output.html]
+git-repository-url = "https://github.com/tomato-bazel/gate"
+edit-url-template = ""
+no-section-label = true
+
+[output.html.fold]
+enable = true
+level = 1

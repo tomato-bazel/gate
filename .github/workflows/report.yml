@@ -1,0 +1,94 @@
+# The registry conformance report, published to GitHub Pages.
+#
+# Regenerates from the LIVE registry rather than the committed
+# gates/testdata/registry.ttl snapshot: that snapshot exists so `bazel test`
+# is hermetic, but a report built from it would be as stale as the last commit.
+#
+# No credentials. bazel-registry is public and registry.fastverk.com serves the
+# module metadata unauthenticated, so unlike ratchet.yml / report.yml /
+# conformance.yml in the registry repo, this needs no fastverk App token.
+#
+# Deploys to this repo's OWN Pages (tomato-bazel.github.io/gate/). Deliberately
+# not the registry's Pages: that already publishes the ecosystem health
+# dashboard, and Pages serves one artifact per repo, so sharing it would replace
+# what is currently up.
+name: conformance-report
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"      # weekly, Monday 09:00 UTC — after the registry's
+                             # ratchet (06:00), report (07:00) and conformance
+                             # (08:00) jobs, so it reflects their output.
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deployments race; queue rather than cancel, so a scheduled run
+# is not silently dropped by a manual one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # Verified against the actual release assets — the 0.4.x asset naming
+  # differs and a wrong pin 404s only at deploy time.
+  MDBOOK_VERSION: "0.5.4"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone the live registry
+        run: git clone --depth 1 https://github.com/tomato-bazel/bazel-registry.git _registry
+
+      - uses: bazel-contrib/setup-bazel@0.10.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+
+      # --allow-unresolved: the registry genuinely contains an unresolvable
+      # module (rules_cc_host has a metadata.json but no version directories,
+      # because its only version was yanked). A periodic report should surface
+      # that, not fail forever on it. The proper fix is an S6 gate on
+      # metadata/directory drift.
+      - name: Re-project the live registry
+        run: |
+          bazel run //crates/gate-rdf:project -- \
+            "$PWD/_registry" "$PWD/gates/testdata/registry.ttl" --allow-unresolved
+
+      - name: Render the report
+        run: bazel build //gates:report
+
+      - name: Assemble the book
+        run: |
+          mkdir -p docs/src
+          cp -R bazel-bin/gates/report_src/. docs/src/
+          echo "pages generated: $(find docs/src -name '*.md' | wc -l)"
+
+      - name: Install mdbook
+        run: |
+          curl -fsSL \
+            "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+            | tar -xz -C /usr/local/bin
+
+      - run: mdbook build docs
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/book
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
