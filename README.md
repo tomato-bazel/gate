@@ -3,9 +3,11 @@
 Registry admission gating for tomato-bazel: prove invariants about a module
 from its graph before it is allowed into the registry.
 
-## Status: v0.0.1 — M1 in progress
+## Status: v0.0.1 — M1 done, M2 started
 
-`bzlmod` (MODULE.bazel evaluation + module graph) is landing. No gates ship yet.
+`bzlmod` (MODULE.bazel evaluation, module graph, MVS) is complete and verified
+against Bazel's own resolution. Four gates run as Bazel targets:
+`bazel test //gates/...`.
 
 ## Why
 
@@ -54,6 +56,7 @@ is a single query.
 | Crate | Purpose |
 |---|---|
 | `bzlmod` | `MODULE.bazel` evaluation, the module graph, MVS, registry client |
+| `gate-rdf` | Projection to Turtle. Facts only — no policy |
 
 `bzlmod` is also roma's unstarted **B1** (`roma/docs/bzlmod-strategy.md`: own
 parse + MVS + registry fetch). Building it here means the registry gets gating
@@ -73,7 +76,21 @@ over the latest version of each of the 74 modules:
 | C1 | 10 of 30 external atoms pinned at more than one version |
 | D2 | 32 of 74 modules register toolchains that propagate to every consumer |
 | D3 | 34 repo names chosen on a *shared* extension without a module namespace |
-| V1 | 0 violations — because no module has reached 1.0.0 yet |
+| V1 | dropped — `compatibility_level` is a no-op as of Bazel 8.6.0 / 9.1.0 |
+
+The same four run as gates over the projection
+(`bazel run //gates:report_<gate>`): S4 5, D2 57 registrations, D3 34, C1 19
+version pairs.
+
+`compatibility_level` deserves a note, because it changes what C1 is *for*.
+Bazel made it and `max_compatibility_level` no-ops, so there is no longer any
+in-band way for a module to signal a breaking change: MVS takes max-of-minimums,
+and if A needs `x 1.0.0` while B needs `x 2.0.0`, A silently gets 2.0.0. Bazel
+used to reject that and cannot now. **One live version per atom is therefore the
+compatibility mechanism, not merely a tidiness goal** — it is the only thing
+standing between a consumer and a silent breaking upgrade. The registry has 9
+such silent upgrades today, including `botnoc` declaring `rules_java 8.15.2` and
+receiving `9.1.0`.
 
 D3 is the one worth reading closely, because the naive form of it is wrong.
 Apparent repo names are module-scoped, so `@crates` in two unrelated modules is

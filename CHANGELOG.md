@@ -31,5 +31,12 @@ published bazel-registry entries.
   own answer. Verified against `rules_k8s`, `rules_lean` and `rules_tla`
   lockfiles: **zero mismatches** on every module the registry can resolve.
 - Bazel build: `bazel test //...` alongside `cargo test`, over @gate_crates.
+- `gate-rdf`: projects the registry to Turtle. Facts only, no policy.
+- `//gates`: the first four invariants as `sparql_query_test` targets — S4
+  (no override in a published module), D2 (undeclared toolchain leakage), D3
+  (unnamespaced repo on a shared extension), C1 (one live version per atom).
+  Each is wired both against a clean fixture (must return zero rows) and a
+  known-violation fixture diffed against a committed golden, so a malformed
+  query cannot masquerade as a passing gate.
 
 ## 0.0.1 — scaffold
