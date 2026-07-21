@@ -33,6 +33,7 @@ GATES = [
     "d2_undeclared_toolchain_leak",
     "d3_unnamespaced_extension_repo",
     "c1_atom_multi_version",
+    "s6_metadata_directory_drift",
 ]
 
 exports_files([g + ".rq" for g in GATES] + ["declarations.ttl"])

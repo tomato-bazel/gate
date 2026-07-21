@@ -63,3 +63,22 @@
     gate:selectionAtom "rules_java" ;
     gate:selectionVersion "9.1.0" ;
     gate:selectionExternal true .
+
+# --- S6: all three shapes of metadata/directory drift. ------------------------
+# rules_cc_host, VERBATIM as the registry holds it: metadata and directories
+# agree perfectly, and 0.1.0 — its only version — is yanked with "cannot work as
+# a bazel_dep". Nothing resolves. An earlier draft of this fixture invented a
+# missing directory, which would have made the gate pass against a shape the
+# registry does not actually contain.
+<https://tbzl.dev/mod/rules_cc_host> a gate:Module ;
+    gate:name "rules_cc_host" ;
+    gate:declaresVersion "0.1.0" ;
+    gate:hasVersionDir "0.1.0" ;
+    gate:yankedVersion "0.1.0" ;
+    gate:isRegistryEntry true .
+
+<https://tbzl.dev/mod/drifty> a gate:Module ;
+    gate:name "drifty" ;
+    gate:declaresVersion "1.0.0", "1.1.0" ;
+    gate:hasVersionDir "1.0.0", "1.2.0" ;
+    gate:isRegistryEntry true .

@@ -44,6 +44,7 @@ pub const MODULE_NS: &str = "https://tbzl.dev/m/";
 pub const SELECTION_NS: &str = "https://tbzl.dev/sel/";
 pub const EXT_NS: &str = "https://tbzl.dev/ext/";
 pub const OVERRIDE_NS: &str = "https://tbzl.dev/ovr/";
+pub const MODULE_ENTRY_NS: &str = "https://tbzl.dev/mod/";
 
 /// Turtle prefix header shared by every emitted document and by the queries.
 pub const PREFIXES: &str = concat!(
@@ -344,6 +345,34 @@ pub fn project_registry(
             Ok(g) => emit_module(&mut out, &g, publisher, true, &mut referenced)?,
             Err(e) => unresolved.push(format!("{key}: {e}")),
         }
+    }
+
+    // Registry-level facts: what metadata.json DECLARES versus what exists on
+    // disk. Emitted per module rather than per version, because the drift S6
+    // looks for is a disagreement between the two lists — a version listed with
+    // no directory, a directory absent from the list, or a module with a
+    // metadata.json and no versions at all (`rules_cc_host`, whose only version
+    // was yanked).
+    //
+    // Each list is a repeated single-valued property, so a query can filter one
+    // against the other with NOT EXISTS without producing a cross product.
+    writeln!(out, "\n# --- registry entries (metadata vs directories) ---")?;
+    for name in publisher.modules()? {
+        let iri = format!("<{MODULE_ENTRY_NS}{name}>");
+        writeln!(out, "{iri} a gate:Module ;")?;
+        writeln!(out, "    gate:name {} ;", lit(&name))?;
+        if let Some(meta) = publisher.metadata(&name)? {
+            for v in &meta.versions {
+                writeln!(out, "    gate:declaresVersion {} ;", lit(v))?;
+            }
+            for v in meta.yanked_versions.keys() {
+                writeln!(out, "    gate:yankedVersion {} ;", lit(v))?;
+            }
+        }
+        for v in publisher.version_dirs(&name)? {
+            writeln!(out, "    gate:hasVersionDir {} ;", lit(v.as_str()))?;
+        }
+        writeln!(out, "    gate:isRegistryEntry true .")?;
     }
 
     // Identity for every referenced module IRI, including third-party ones the

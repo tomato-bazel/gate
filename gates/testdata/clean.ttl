@@ -61,3 +61,10 @@
 <https://tbzl.dev/m/platforms/1.0.0> gate:name "platforms" ;
     gate:version "1.0.0" ;
     gate:isExternal true .
+
+# A registry entry whose metadata.json and version directories agree.
+<https://tbzl.dev/mod/rules_good> a gate:Module ;
+    gate:name "rules_good" ;
+    gate:declaresVersion "0.9.0", "1.0.0" ;
+    gate:hasVersionDir "0.9.0", "1.0.0" ;
+    gate:isRegistryEntry true .
