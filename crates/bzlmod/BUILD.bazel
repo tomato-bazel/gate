@@ -1,0 +1,89 @@
+"""bzlmod — MODULE.bazel evaluation, the module graph, and MVS.
+
+Deps come from @gate_crates (crate_universe over the workspace Cargo.toml +
+Cargo.lock), so `cargo test` and `bazel test` compile the same sources against
+the same pinned crates.
+"""
+
+# NOTE: all_crate_deps keys off native.package_name() — crate_universe maps
+# deps by workspace-relative path ("crates/bzlmod"), NOT by cargo package
+# name. Passing package_name = "bzlmod" fails; the default is correct.
+load("@gate_crates//:defs.bzl", "all_crate_deps")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_test")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "bzlmod",
+    srcs = glob(["src/**/*.rs"]),
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    deps = all_crate_deps(normal = True),
+)
+
+# The inline `#[cfg(test)]` modules in src/ — version ordering and the
+# MODULE.bazel evaluator.
+rust_test(
+    name = "bzlmod_test",
+    crate = ":bzlmod",
+    edition = "2021",
+)
+
+# Real MODULE.bazel files vendored from the registry. `compile_data`, not
+# `data`: the test `include_str!`s them, so they are compile-time inputs and
+# the test needs no runfiles lookup and no sandbox escape.
+filegroup(
+    name = "testdata",
+    srcs = glob(["testdata/**"]),
+)
+
+rust_test(
+    name = "fixtures_test",
+    srcs = ["tests/fixtures.rs"],
+    compile_data = [":testdata"],
+    crate_root = "tests/fixtures.rs",
+    edition = "2021",
+    deps = [":bzlmod"] + all_crate_deps(normal = True),
+)
+
+# The whole-registry sweep. It needs a bazel-registry checkout on disk, which is
+# outside the sandbox, so under Bazel it SKIPS and passes trivially — it is kept
+# building here only so it cannot rot. Run it for real with
+# `cargo test -p bzlmod --test corpus`, or set BZLMOD_REGISTRY.
+#
+# The registry-wide check proper is not a unit test at all: it is the projection
+# step (`tbzl-gate project`) feeding the //gates sparql_query_test suite.
+rust_test(
+    name = "corpus_test",
+    srcs = ["tests/corpus.rs"],
+    crate_root = "tests/corpus.rs",
+    edition = "2021",
+    deps = [":bzlmod"] + all_crate_deps(normal = True),
+)
+
+# Reconnaissance over a registry checkout: reports what the S/C/D/V gates would
+# find. Reports, does not judge.
+#
+#     bazel run //crates/bzlmod:survey -- /abs/path/to/bazel-registry
+rust_binary(
+    name = "survey",
+    srcs = ["examples/survey.rs"],
+    crate_root = "examples/survey.rs",
+    edition = "2021",
+    deps = [":bzlmod"] + all_crate_deps(normal = True),
+)
+
+# Prints MVS selections as JSON, for diffing against Bazel's own answer in a
+# checkout's MODULE.bazel.lock (registryFileHashes ending in source.json are the
+# versions Bazel selected). This is how MVS correctness is verified.
+#
+#     bazel run //crates/bzlmod:selections -- <registry> <module> [version]
+rust_binary(
+    name = "selections",
+    srcs = ["examples/selections.rs"],
+    crate_root = "examples/selections.rs",
+    edition = "2021",
+    deps = [":bzlmod"] + all_crate_deps(normal = True),
+)
+
+exports_files(["Cargo.toml"])

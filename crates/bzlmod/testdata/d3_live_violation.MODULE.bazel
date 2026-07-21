@@ -1,0 +1,128 @@
+"""vpn — WireGuard private-plane access as a standalone fastverk module.
+
+A public, OIDC-authed gRPC provisioner (Java/Fargate) + a hermetic Rust client
+(wg-client) + the CloudFormation to stand up the gateway (EC2 Image Builder AMI,
+ASG) and a reference Cognito IdP. Lifted from infra/control-plane, parameterized.
+See README.md.
+"""
+
+module(
+    name = "vpn",
+    version = "0.0.1",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "platforms", version = "1.0.0")
+
+# ─── Infrastructure: CloudFormation deploy (fastverk registry) ─────────────────
+# rules_cloudformation: cloudformation_up / cloudformation_down are `bazel run`-able
+# wrappers around `aws cloudformation deploy` / delete-stack. deploy/defs.bzl
+# (infra_stack) wraps each hand-authored YAML template with them.
+bazel_dep(name = "rules_cloudformation", version = "0.7.1")
+
+# sh_binary for the infra_stack deploy launchers (native.sh_binary is being removed).
+bazel_dep(name = "rules_shell", version = "0.6.1")
+
+# ─── Proto contract: AIP proto → Java gRPC + a Rust descriptor set ─────────────
+bazel_dep(name = "protobuf", version = "33.4")
+bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "rules_java", version = "9.1.0")
+bazel_dep(name = "rules_jvm_external", version = "6.8")
+bazel_dep(name = "rules_proto_grpc", version = "5.8.0")
+bazel_dep(name = "rules_proto_grpc_java", version = "5.8.0")
+
+# protoc-gen-doc — render the API reference (proto/API.md) from the proto_library.
+bazel_dep(name = "rules_proto_grpc_doc", version = "5.8.0")
+
+# googleapis: the google.api.* AIP annotations (proto_library) + Java bindings.
+bazel_dep(name = "googleapis", version = "0.0.0-20260422-20ac242a")
+bazel_dep(name = "googleapis-java", version = "1.1.5")
+
+# AIP proto linting (api-linter) + AIP proto_library defaults.
+bazel_dep(name = "rules_aip", version = "0.2.2")
+
+# ─── Hermetic clang C/C++ toolchain ───────────────────────────────────────────
+# protobuf/protoc needs a C/C++ toolchain. Register a hermetic LLVM/clang one (the
+# same pin control-plane uses) so a no-gcc CI image / clean host doesn't fail with
+# "Cannot find gcc or CC". Pair with BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1 in .bazelrc.
+bazel_dep(name = "toolchains_llvm", version = "1.7.0")
+
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(llvm_version = "18.1.8")
+use_repo(llvm, "llvm_toolchain")
+
+register_toolchains("@llvm_toolchain//:all")
+
+# Provisioner Java deps: gRPC server runtime + JWT validation + the AWS SDK (DynamoDB
+# peer registry + SSM server-public-key). grpc runtime must match the protoc-gen-grpc
+# plugin pinned by rules_proto_grpc_java 5.8.0 (1.74.0). sts + apache-client are
+# runtime-only (IRSA web-identity + a sync HTTP client for the SDK).
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "com.google.protobuf:protobuf-java:4.33.4",
+        "com.google.api.grpc:proto-google-common-protos:2.51.0",
+        "io.grpc:grpc-api:1.74.0",
+        "io.grpc:grpc-netty-shaded:1.74.0",
+        "io.grpc:grpc-protobuf:1.74.0",
+        "io.grpc:grpc-services:1.74.0",
+        "io.grpc:grpc-stub:1.74.0",
+        # Bearer-JWT validation against the OIDC issuer's JWKS (JwtAuthInterceptor).
+        "com.auth0:java-jwt:4.4.0",
+        "com.auth0:jwks-rsa:0.22.1",
+        # Peer registry (DynamoDB) + gateway server-public-key (SSM Parameter Store).
+        "software.amazon.awssdk:dynamodb:2.46.14",
+        "software.amazon.awssdk:ssm:2.46.14",
+        # Runtime-only: IRSA web-identity creds + a sync HTTP client for the SDK.
+        "software.amazon.awssdk:sts:2.46.14",
+        "software.amazon.awssdk:apache-client:2.46.14",
+    ],
+    repositories = ["https://repo1.maven.org/maven2"],
+)
+use_repo(maven, "maven")
+
+# ─── Rust client (wg-client) ──────────────────────────────────────────────────
+# A hermetic CLI users run on their own machine (keygen / provision / up). Host
+# build only — it isn't imaged, so no linux cross toolchain is needed.
+bazel_dep(name = "rules_rust", version = "0.70.0")
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2021",
+    versions = ["1.95.0"],
+)
+use_repo(rust, "rust_toolchains")
+register_toolchains("@rust_toolchains//:all")
+
+# crate_universe over the (wg-client-only) Cargo workspace. isolate = True keeps our
+# universe from colliding with any consumer's.
+crate = use_extension(
+    "@rules_rust//crate_universe:extension.bzl",
+    "crate",
+    isolate = True,
+)
+crate.from_cargo(
+    name = "crates",
+    cargo_lockfile = "//:Cargo.lock",
+    manifests = ["//:Cargo.toml"],
+)
+use_repo(crate, "crates")
+
+# ─── Provisioner OCI image ────────────────────────────────────────────────────
+bazel_dep(name = "rules_oci", version = "2.2.6")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+
+# rules_oci 2.2.6 pulls an aspect_bazel_lib whose generated yq_toolchain.bzl uses a
+# kwarg Bazel 9.x removed; pin a newer one (matches control-plane's workaround).
+bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
+
+# distroless/java21 base for the provisioner image. nonroot (uid 65532) + bundled
+# JRE 21; linux/amd64 (the Fargate arch). Same digest control-plane pins.
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+oci.pull(
+    name = "distroless_java",
+    digest = "sha256:7e37784d94dccbf5ccb195c73b295f5ad00cd266512dfbac12eb9c3c28f8077d",
+    image = "gcr.io/distroless/java21-debian12",
+    platforms = ["linux/amd64"],
+)
+use_repo(oci, "distroless_java", "distroless_java_linux_amd64")

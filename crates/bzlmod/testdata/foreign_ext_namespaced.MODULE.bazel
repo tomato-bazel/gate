@@ -1,0 +1,54 @@
+# Apache Jena toolchain implementations for rules_rdf — SPARQL
+# engine (ARQ), SHACL validator, Turtle/N-Triples serializers, OWL
+# reasoner. Java tools built via rules_java + Maven.
+module(
+    name = "rules_jena",
+    version = "0.3.2",
+)
+
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+
+# rules_jena provides Apache Jena-backed concrete implementations of
+# the toolchain types defined by rules_rdf. The abstract plugin
+# contract (stdin/argv/stdout shape, conformance test rule) lives
+# upstream; the Jena java_binary targets that satisfy it live here.
+bazel_dep(name = "rules_rdf", version = "0.3.0")
+
+bazel_dep(name = "rules_java", version = "8.6.1")
+
+# Maven dep management. Same artifact set as the production
+# `JENA_DEPS` constant in ~/Documents/rfcs/kg/java/BUILD.bazel —
+# arq + core + base + iri + slf4j-simple. Pinned via rules_jvm_external.
+bazel_dep(name = "rules_jvm_external", version = "6.6")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "jena_maven",
+    artifacts = [
+        "org.apache.jena:jena-arq:5.2.0",
+        "org.apache.jena:jena-core:5.2.0",
+        "org.apache.jena:jena-base:5.2.0",
+        "org.apache.jena:jena-iri:5.2.0",
+        "org.apache.jena:jena-cmds:5.2.0",
+        "org.apache.jena:jena-shacl:5.2.0",
+        "org.slf4j:slf4j-simple:2.0.16",
+    ],
+    lock_file = "//:maven_install.json",
+)
+use_repo(maven, "jena_maven")
+
+# Register all four Jena-backed toolchains so consumers of
+# rules_jena get a working implementation of every rules_rdf
+# toolchain type without further wiring.
+register_toolchains(
+    "//jena:jena_sparql_toolchain_def",
+    "//jena:jena_shacl_toolchain_def",
+    "//jena:jena_riot_toolchain_def",
+    "//jena:jena_reasoner_toolchain_def",
+)
+
+# Dev-only: docs/BUILD.bazel + examples.
+bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
+bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True)
+bazel_dep(name = "rules_jsonschema", version = "0.2.0", dev_dependency = True)

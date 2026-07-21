@@ -1,0 +1,79 @@
+# rules_schema_org — the grounding ontology for typed tool capabilities.
+#
+# Pins schema.org (and, incrementally, SKOS / DC / the module closure)
+# as sha-verified RDF via rules_rdf's `rdf.resource`, composes the
+# linked-graph closure, RDFS-materializes the subclass/subproperty
+# hierarchy with the Jena reasoner (rules_jena), and exposes the
+# grounding tuples (class → superclasses, properties, domain/range) that
+# the NL→BGP parser is trained to target. Replaces the ad-hoc
+# savvi-studio schemaorg tooling.
+module(
+    name = "rules_schema_org",
+    version = "0.0.1",
+)
+
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+
+# RDF toolchain types + the resource-pin / dataset / reason / sparql
+# rules. 0.3.0 adds rdf.resource, deps-closure, the namespace aspect,
+# and the sparql_query producer.
+bazel_dep(name = "rules_rdf", version = "0.3.0")
+local_path_override(
+    module_name = "rules_rdf",
+    path = "../rules_rdf",
+)
+
+# Apache Jena — concrete SPARQL/reasoner/serializer/validator backends.
+# Its MODULE auto-registers all four rules_rdf toolchains, so
+# rdf_reason / sparql_query work here with no further wiring.
+bazel_dep(name = "rules_jena", version = "0.2.1")
+local_path_override(
+    module_name = "rules_jena",
+    path = "../rules_jena",
+)
+
+# ns_tool (the rdf_namespace_aspect's extractor) is a py_binary, so a
+# python toolchain must be registered here.
+bazel_dep(name = "rules_python", version = "1.7.0")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.12",
+    is_default = True,
+)
+
+# ─── Pinned grounding vocabularies ────────────────────────────────
+rdf = use_extension("@rules_rdf//rdf:extensions.bzl", "rdf")
+
+# schema.org current vocabulary. Pinned by sha256 against the `latest`
+# release (schema.org doesn't serve stable per-version TTL URLs); if
+# upstream `latest` changes the sha mismatch fails loudly to re-pin.
+rdf.resource(
+    name = "schemaorg_ttl",
+    url = "https://schema.org/version/latest/schemaorg-current-https.ttl",
+    sha256 = "320938f0945d717fc317f822c707f10944e7a7a0097018665a3b95dcf475b39d",
+    format = "turtle",
+)
+
+# SKOS core (RDF/XML — normalized to turtle by rdf_transform before it
+# joins the closure).
+rdf.resource(
+    name = "skos_rdf",
+    url = "https://www.w3.org/2009/08/skos-reference/skos.rdf",
+    sha256 = "e79633b8d0564816cee8a99f5c9acf9a0e6fc7257c7209acd684ecad53a89dd6",
+    format = "rdfxml",
+)
+
+# DCMI Terms (already turtle).
+rdf.resource(
+    name = "dcterms_ttl",
+    url = "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
+    sha256 = "13df401072dd7015bf9d75162f3e41c8138075304b7b9cc1aa1e9c16db976797",
+    format = "turtle",
+)
+
+use_repo(rdf, "schemaorg_ttl", "skos_rdf", "dcterms_ttl")
+
+# Dev-only.
+bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True)

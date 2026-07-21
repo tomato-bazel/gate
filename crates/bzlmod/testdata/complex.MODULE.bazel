@@ -1,0 +1,164 @@
+module(
+    name = "meridian",
+    version = "0.2.6",
+    compatibility_level = 1,
+)
+
+# Web (TypeScript) — original Meridian surface.
+bazel_dep(name = "aspect_rules_js", version = "3.1.2")
+bazel_dep(name = "aspect_rules_ts", version = "3.8.9")
+bazel_dep(name = "rules_nodejs", version = "6.7.4")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+
+# Direct dep so `@platforms//os:ios` is visible as a select() key in proto/BUILD
+# (drops the Rust serde transform from uiview_proto's data on iOS).
+bazel_dep(name = "platforms", version = "0.0.11")
+
+# Java — JavaFX desktop renderer + shared descriptor-driven helpers.
+# Consumers (Pinax today) get the Java surface via `bazel_dep(name =
+# "meridian", ...)` and target `@meridian//java/...`.
+bazel_dep(name = "rules_jvm_external", version = "6.8")
+bazel_dep(name = "rules_java", version = "8.15.2")
+
+# Rust — uiview core + ratatui TUI + tui-demo. Crate dependencies
+# resolve via crate_universe reading rust/Cargo.toml + Cargo.lock;
+# proto codegen via rules_rust_prost (consumes Bazel proto_library
+# graphs so @googleapis provides field_behavior natively, no
+# vendoring); wasm bundle via rules_rust_wasm_bindgen.
+bazel_dep(name = "rules_rust", version = "0.70.0")
+bazel_dep(name = "rules_rust_prost", version = "0.70.0")
+bazel_dep(name = "rules_rust_wasm_bindgen", version = "0.70.0")
+
+# Proto contracts — meridian.ui.v1.PanelDescriptor and friends. The
+# descriptors compile to Java + (eventually) TypeScript + Rust so the
+# same protos drive every platform's renderer.
+bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "rules_proto_grpc", version = "5.8.0")
+bazel_dep(name = "rules_proto_grpc_java", version = "5.8.0")
+bazel_dep(name = "protobuf", version = "33.4")
+bazel_dep(name = "googleapis", version = "0.0.0-20260422-20ac242a")
+bazel_dep(name = "googleapis-java", version = "1.1.5")
+
+# Swift — SwiftUI desktop renderer (swift/MeridianUI) + swift-protobuf
+# descriptor codegen (proto:MeridianProto). rules_swift resolves from BCR;
+# it pulls apple_support, whose CC toolchain we register so swiftc builds on
+# the darwin host (it must outrank Bazel's autoconf "local" toolchain, else
+# rules_swift fails with "Invalid target triple: local"). swift_* targets
+# only build on demand, so non-Swift consumers (e.g. Pinax's Java surface)
+# pay nothing at build time. Requires a full Xcode on the build host.
+bazel_dep(name = "rules_swift", version = "3.6.1")
+bazel_dep(name = "apple_support", version = "2.2.0", repo_name = "build_bazel_apple_support")
+
+apple_cc = use_extension("@build_bazel_apple_support//crosstool:setup.bzl", "apple_cc_configure_extension")
+use_repo(apple_cc, "local_config_apple_cc_toolchains")
+
+register_toolchains("@local_config_apple_cc_toolchains//:all")
+
+# Prebuilt protoc for the protobuf-es codegen (//bazel:proto_es.bzl), so codegen
+# never compiles protoc from source — the apple_support CC toolchain (registered
+# below for Swift) can't build it on a Command-Line-Tools-only host. Exposes
+# @meridian_protoc//:protoc; ONLY proto_es uses it, so the Java/Rust/Swift proto
+# toolchains are untouched.
+protoc_prebuilt = use_extension("//bazel:protoc_prebuilt.bzl", "protoc_prebuilt")
+use_repo(protoc_prebuilt, "meridian_protoc")
+
+# rules_vite is dev-only: it's used to wire vitest_test targets in
+# tests/BUILD.bazel. Consumers of meridian don't need it.
+bazel_dep(name = "rules_vite", version = "0.1.0", dev_dependency = True)
+
+node = use_extension(
+    "@rules_nodejs//nodejs:extensions.bzl",
+    "node",
+    dev_dependency = True,
+)
+node.toolchain(node_version = "22.11.0")
+
+rules_ts_ext = use_extension("@aspect_rules_ts//ts:extensions.bzl", "ext")
+rules_ts_ext.deps(ts_version = "5.6.3")
+use_repo(rules_ts_ext, "npm_typescript")
+
+npm = use_extension(
+    "@aspect_rules_js//npm:extensions.bzl",
+    "npm",
+    dev_dependency = True,
+)
+npm.npm_translate_lock(
+    name = "npm",
+    pnpm_lock = "//:pnpm-lock.yaml",
+)
+use_repo(npm, "npm")
+
+# Maven dependencies for the Java surface. Pinned to match Pinax's
+# versions so consumers don't pay version-skew costs when depending on
+# both at once.
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "com.google.api.grpc:proto-google-common-protos:2.55.2",
+        "com.google.code.gson:gson:2.13.1",
+        "com.google.protobuf:protobuf-java:4.33.4",
+        # JsonFormat — proto ↔ proto3-JSON, used by the JsonRpcGateway
+        # to bridge browser POST bodies into typed gRPC requests.
+        "com.google.protobuf:protobuf-java-util:4.33.4",
+        # gRPC in-process transport — the JavaFX renderer talks to its
+        # host server over an InProcess channel. Other transports work
+        # too; the LRO driver uses ClientCalls.blockingUnaryCall which
+        # is channel-agnostic.
+        "io.grpc:grpc-inprocess:1.74.0",
+        "io.grpc:grpc-xds:1.74.0",
+        # JavaFX UI runtime. Classifier jars carry per-OS native libs.
+        # Hosts targeting different platforms add their classifiers.
+        "org.openjfx:javafx-base:21.0.5",
+        "org.openjfx:javafx-graphics:21.0.5",
+        "org.openjfx:javafx-controls:21.0.5",
+        "org.openjfx:javafx-base:jar:mac-aarch64:21.0.5",
+        "org.openjfx:javafx-graphics:jar:mac-aarch64:21.0.5",
+        "org.openjfx:javafx-controls:jar:mac-aarch64:21.0.5",
+    ],
+    known_contributing_modules = [
+        "meridian",
+        "protobuf",
+        "rules_proto_grpc_java",
+    ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+)
+use_repo(maven, "maven")
+
+# Rust toolchain. Pinned to match the workspace's Cargo.toml edition.
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2021",
+    # wasm32 target needed by rules_rust_wasm_bindgen.
+    extra_target_triples = ["wasm32-unknown-unknown"],
+    versions = ["1.85.0"],
+)
+use_repo(rust, "rust_toolchains")
+
+register_toolchains("@rust_toolchains//:all")
+
+# Crate-universe pulls dependencies declared in rust/Cargo.toml +
+# Cargo.lock and exposes them as Bazel targets. The lockfile is
+# authoritative; bazel re-resolution is opt-in via `bazel run
+# @crates//:cargo`.
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+crate.from_cargo(
+    name = "crates",
+    cargo_lockfile = "//rust:Cargo.lock",
+    manifests = ["//rust:Cargo.toml"],
+)
+use_repo(crate, "crates")
+
+# wasm-bindgen toolchain. The default toolchain from
+# rules_rust_wasm_bindgen pulls a pinned wasm-bindgen-cli binary —
+# no host install required.
+register_toolchains("@rules_rust_wasm_bindgen//:default_wasm_bindgen_toolchain")
+
+# Tonic-free prost toolchain. Defined in //rust:BUILD.bazel. Root
+# MODULE registrations win toolchain resolution over the default
+# `@rules_rust_prost//:default_prost_toolchain`, which drags tonic +
+# tokio + mio into every rust_prost_library — incompatible with the
+# wasm32 transition. uiview only needs proto types; gRPC clients are
+# wired up separately on native targets.
+register_toolchains("//rust:prost_toolchain")
