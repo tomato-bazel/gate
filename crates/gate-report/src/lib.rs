@@ -34,30 +34,119 @@ use serde::Deserialize;
 // SPARQL JSON results
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub struct SparqlResults {
     pub head: Head,
     pub results: Bindings,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub struct Head {
-    #[serde(default)]
     pub vars: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub struct Bindings {
-    #[serde(default)]
     pub bindings: Vec<BTreeMap<String, Binding>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub struct Binding {
     pub value: String,
 }
 
+/// Strip SPARQL-TSV quoting from one field.
+///
+/// `"text"` -> text (with N-Triples escapes resolved), `<iri>` -> iri, anything
+/// else verbatim (numbers and booleans are unquoted in this serialization).
+fn unquote(field: &str) -> String {
+    if let Some(inner) = field.strip_prefix('<').and_then(|f| f.strip_suffix('>')) {
+        return inner.to_string();
+    }
+    // A typed literal carries a ^^<datatype> suffix; the lexical form is what
+    // a report table wants.
+    let core = match field.find("\"^^") {
+        Some(i) => &field[..i + 1],
+        None => field,
+    };
+    let Some(inner) = core.strip_prefix('"').and_then(|f| f.strip_suffix('"')) else {
+        return field.to_string();
+    };
+    let mut out = String::with_capacity(inner.len());
+    let mut chars = inner.chars();
+    while let Some(c) = chars.next() {
+        if c != '\\' {
+            out.push(c);
+            continue;
+        }
+        match chars.next() {
+            Some('t') => out.push('\t'),
+            Some('n') => out.push('\n'),
+            Some('r') => out.push('\r'),
+            Some('"') => out.push('"'),
+            Some('\\') => out.push('\\'),
+            Some(other) => {
+                out.push('\\');
+                out.push(other);
+            }
+            None => out.push('\\'),
+        }
+    }
+    out
+}
+
 impl SparqlResults {
+    /// Parse Jena's SPARQL TSV serialization.
+    ///
+    /// Used instead of SPARQL JSON because rules_jena's `json` and `xml`
+    /// serializations both emit a zero-byte file and exit 0. TSV is the only
+    /// one that actually writes.
+    ///
+    /// The format: a header of `?var` names, then one row per result. Literals
+    /// are quoted and N-Triples-escaped; IRIs are angle-bracketed; an unbound
+    /// variable is an empty field. Tabs and newlines inside a literal arrive
+    /// escaped (`\t`, `\n`), so splitting on a raw tab is safe — but only
+    /// because of that, which is why unescaping happens after the split and
+    /// never before.
+    pub fn from_tsv(text: &str) -> SparqlResults {
+        let mut lines = text.lines();
+        let vars: Vec<String> = match lines.next() {
+            Some(h) => h
+                .split('\t')
+                .map(|v| v.trim().trim_start_matches('?').to_string())
+                .filter(|v| !v.is_empty())
+                .collect(),
+            None => Vec::new(),
+        };
+
+        let mut bindings = Vec::new();
+        for line in lines {
+            if line.trim().is_empty() {
+                continue;
+            }
+            let mut row = BTreeMap::new();
+            for (i, field) in line.split('\t').enumerate() {
+                let Some(var) = vars.get(i) else { continue };
+                let field = field.trim();
+                if field.is_empty() {
+                    continue; // unbound
+                }
+                row.insert(
+                    var.clone(),
+                    Binding {
+                        value: unquote(field),
+                    },
+                );
+            }
+            bindings.push(row);
+        }
+
+        SparqlResults {
+            head: Head { vars },
+            results: Bindings { bindings },
+        }
+    }
+
     pub fn rows(&self) -> Vec<BTreeMap<&str, &str>> {
         self.results
             .bindings
@@ -594,6 +683,60 @@ impl Report {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn parses_jena_tsv() {
+        let tsv = "?module\t?version\t?target\n\
+                   \"bad_overrides\"\t\"0.0.1\"\t\"rules_jena\"\n\
+                   \"bad_overrides\"\t\"0.0.1\"\t\"rules_rdf\"\n";
+        let r = SparqlResults::from_tsv(tsv);
+        assert_eq!(r.head.vars, vec!["module", "version", "target"]);
+        assert_eq!(r.len(), 2);
+        let rows = r.rows();
+        assert_eq!(rows[0]["module"], "bad_overrides");
+        assert_eq!(rows[1]["target"], "rules_rdf");
+    }
+
+    #[test]
+    fn tsv_header_only_is_an_empty_result_not_a_broken_one() {
+        // A gate that holds emits a header and no rows. That must be
+        // distinguishable from the zero-byte file rules_jena produces for
+        // json/xml, which is why main.rs rejects empty input outright.
+        let r = SparqlResults::from_tsv("?module\t?version\n");
+        assert_eq!(r.head.vars.len(), 2);
+        assert!(r.is_empty());
+    }
+
+    #[test]
+    fn tsv_unescapes_literals() {
+        // Tabs and newlines inside a literal arrive escaped, which is the only
+        // reason splitting on a raw tab is safe.
+        let tsv = "?v\n\"a\\tb\"\n";
+        let r = SparqlResults::from_tsv(tsv);
+        assert_eq!(r.rows()[0]["v"], "a\tb");
+
+        let tsv = "?v\n\"say \\\"hi\\\"\"\n";
+        let r = SparqlResults::from_tsv(tsv);
+        assert_eq!(r.rows()[0]["v"], "say \"hi\"");
+    }
+
+    #[test]
+    fn tsv_handles_iris_and_typed_literals() {
+        let r = SparqlResults::from_tsv("?a\t?b\n<https://e/x>\t\"7\"^^<http://www.w3.org/2001/XMLSchema#integer>\n");
+        let rows = r.rows();
+        assert_eq!(rows[0]["a"], "https://e/x");
+        assert_eq!(rows[0]["b"], "7");
+    }
+
+    #[test]
+    fn tsv_treats_an_empty_field_as_unbound() {
+        // OPTIONAL vars are common in the inventory query; an unbound one must
+        // be absent rather than an empty string, so the renderer can skip it.
+        let r = SparqlResults::from_tsv("?a\t?b\n\"x\"\t\n");
+        let rows = r.rows();
+        assert_eq!(rows[0]["a"], "x");
+        assert!(!rows[0].contains_key("b"));
+    }
 
     fn results(vars: &[&str], rows: Vec<Vec<(&str, &str)>>) -> SparqlResults {
         SparqlResults {

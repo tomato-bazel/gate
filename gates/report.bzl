@@ -6,10 +6,9 @@ makes `ctx.actions.declare_directory` the right primitive rather than a
 workaround: the report is one logical artifact whose contents Bazel need not
 enumerate ahead of time.
 
-The rule takes gate results as SPARQL JSON rather than TSV. Jena's TSV quotes
-literals, and re-parsing that correctly is fiddly in a way that fails quietly —
-a mis-split row becomes a wrong table rather than an error. TSV stays for the
-golden diffs, where a human reads it.
+Gate results arrive as TSV. That is not the natural choice — SPARQL JSON would
+be — but rules_jena's `json` and `xml` serializations both emit a ZERO-BYTE file
+and exit 0, so TSV is the only one that works. See the note in BUILD.bazel.
 """
 
 def _gate_report_impl(ctx):
@@ -61,17 +60,17 @@ gate_report = rule(
         "inventory": attr.label(
             allow_single_file = True,
             mandatory = True,
-            doc = "SPARQL JSON results for the per-module inventory query.",
+            doc = "SPARQL TSV results for the per-module inventory query.",
         ),
         "selections": attr.label(
             allow_single_file = True,
             mandatory = True,
-            doc = "SPARQL JSON: which module resolves which version of which atom.",
+            doc = "SPARQL TSV: which module resolves which version of which atom.",
         ),
         "upgrades": attr.label(
             allow_single_file = True,
             mandatory = True,
-            doc = "SPARQL JSON: modules silently upgraded past their declared pin.",
+            doc = "SPARQL TSV: modules silently upgraded past their declared pin.",
         ),
         "gate_ids": attr.string_list(
             mandatory = True,
@@ -84,9 +83,9 @@ gate_report = rule(
                   "so documentation cannot drift from the gate it documents.",
         ),
         "gate_results": attr.label_list(
-            allow_files = [".json"],
+            allow_files = [".tsv"],
             mandatory = True,
-            doc = "SPARQL JSON results, index-aligned with gate_queries.",
+            doc = "SPARQL TSV results, index-aligned with gate_queries.",
         ),
         "_tool": attr.label(
             default = "//crates/gate-report:gate-report",

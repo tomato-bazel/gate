@@ -17,7 +17,15 @@ use gate_report::{Bom, Gate, Report, SparqlResults};
 fn read_results(path: &str) -> anyhow::Result<SparqlResults> {
     let text = std::fs::read_to_string(path)
         .map_err(|e| anyhow::anyhow!("read {path}: {e}"))?;
-    serde_json::from_str(&text).map_err(|e| anyhow::anyhow!("parse {path}: {e}"))
+    // An empty file is not an empty result set — it is the rules_jena
+    // zero-byte-output bug, or a truncated action. A result set with no rows
+    // still has a header. Failing loudly here is what turned that bug from a
+    // wrong report into a build error.
+    anyhow::ensure!(
+        !text.trim().is_empty(),
+        "{path} is empty — expected at least a SPARQL TSV header row"
+    );
+    Ok(SparqlResults::from_tsv(&text))
 }
 
 fn main() -> anyhow::Result<()> {
@@ -68,10 +76,7 @@ fn main() -> anyhow::Result<()> {
         ));
     }
 
-    let empty = || SparqlResults {
-        head: gate_report::Head { vars: vec![] },
-        results: gate_report::Bindings { bindings: vec![] },
-    };
+    let empty = || SparqlResults::from_tsv("");
 
     let report = Report {
         gates,
