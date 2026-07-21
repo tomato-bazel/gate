@@ -45,7 +45,23 @@ rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.toolchain(edition = "2021")
 use_repo(rust, "rust_toolchains")
 
-register_toolchains("@rust_toolchains//:all")
+# dev_dependency, so this does NOT reach consumers.
+#
+# `gate` would otherwise fail its own D2 gate: a non-dev register_toolchains
+# propagates to every transitive consumer, and imposing a Rust toolchain on
+# someone who only wants the .rq gates or the report rule is the same leakage
+# this repo flags in 31 other modules. Publishing a module that violates the
+# invariant it enforces is not a defensible position.
+#
+# A dev registration still applies when `gate` is the ROOT, so `bazel test
+# //...` here is unaffected. A consumer building the Rust binaries registers
+# their own toolchain — the same call this block makes — which is what
+# rules_lean does for its Lean toolchain and what rules_k8s does by deferring
+# to --extra_toolchains.
+register_toolchains(
+    "@rust_toolchains//:all",
+    dev_dependency = True,
+)
 
 # @gate_crates — the crate_universe for //crates/*, resolved from the workspace
 # Cargo.toml + Cargo.lock.
