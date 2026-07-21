@@ -1,0 +1,16 @@
+[package]
+name = "bzlmod"
+description = "MODULE.bazel evaluation, the bzlmod module graph, and minimal version selection."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+thiserror.workspace = true
+starlark.workspace = true
+starlark_syntax.workspace = true
+allocative.workspace = true
+serde.workspace = true
+serde_json.workspace = true
