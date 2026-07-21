@@ -17,15 +17,18 @@ use gate_report::{Bom, Gate, Report, SparqlResults};
 fn read_results(path: &str) -> anyhow::Result<SparqlResults> {
     let text = std::fs::read_to_string(path)
         .map_err(|e| anyhow::anyhow!("read {path}: {e}"))?;
-    // An empty file is not an empty result set — it is the rules_jena
-    // zero-byte-output bug, or a truncated action. A result set with no rows
-    // still has a header. Failing loudly here is what turned that bug from a
-    // wrong report into a build error.
+    // An empty file is not an empty result set. A query with no matches still
+    // emits a full JSON document with an empty bindings array, so zero bytes
+    // means the action produced nothing — a truncated write, a cached empty
+    // output, a failed JVM. This guard is the one durable thing to come out of
+    // chasing a zero-byte-output episode to a wrong conclusion; without it the
+    // symptom is a silently wrong report.
     anyhow::ensure!(
         !text.trim().is_empty(),
-        "{path} is empty — expected at least a SPARQL TSV header row"
+        "{path} is empty — a SPARQL result set is never zero bytes, so the \
+         producing action emitted nothing"
     );
-    Ok(SparqlResults::from_tsv(&text))
+    serde_json::from_str(&text).map_err(|e| anyhow::anyhow!("parse {path}: {e}"))
 }
 
 fn main() -> anyhow::Result<()> {
@@ -76,7 +79,10 @@ fn main() -> anyhow::Result<()> {
         ));
     }
 
-    let empty = || SparqlResults::from_tsv("");
+    let empty = || SparqlResults {
+        head: gate_report::Head { vars: vec![] },
+        results: gate_report::Bindings { bindings: vec![] },
+    };
 
     let report = Report {
         gates,

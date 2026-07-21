@@ -117,18 +117,20 @@ sparql_query_smoke_test(
 # The tbzl.dev conformance report
 # ---------------------------------------------------------------------------
 #
-# Gate results, rendered as an mdBook source tree.
+# Gate results, rendered as an mdBook source tree. SPARQL JSON, because it is
+# unambiguous to parse — TSV would need literal unquoting and escape handling
+# that fails quietly rather than loudly.
 #
-# TSV, not JSON — reluctantly. rules_jena's `out_format = "json"` and `"xml"`
-# both produce a ZERO-BYTE file and exit 0: `ResultEmit.emitSelect` calls
-# Jena's `outputAsJSON`/`outputAsXML`, which buffer through an internal writer
-# that the outer `out.flush()` never reaches, while `outputAsTSV`/`outputAsCSV`
-# write straight through. A silent-success no-op, and one that only surfaces
-# downstream as "EOF while parsing a value at line 1 column 0".
+# A previous revision claimed rules_jena could not emit JSON. That was WRONG:
+# running jena_sparql directly emits JSON fine, and so does a fresh Bazel
+# target. The zero-byte outputs that prompted the claim were cached action
+# results from the window when the Java runtime was misconfigured (Jena 5.2 is
+# class-file 61.0, Bazel defaults to 11) and /Volumes/Cache was full. Bazel
+# served those empty outputs afterwards; a new target name bypassed them.
 #
-# Filed against rules_jena. Until it is fixed, TSV is the only serialization
-# that actually emits, so the report parses it — carefully, with tests for
-# quoted literals, IRIs and unbound variables.
+# The durable lesson is not about formats: gate-report REJECTS an empty results
+# file, because a query with no matches still emits a header, so zero bytes
+# means the action produced nothing.
 #
 # The report is a pure function of (projection x queries) — no hidden state,
 # nothing fetched — so it regenerates deterministically in CI.
@@ -143,7 +145,7 @@ REPORT_QUERIES = GATES + [
     sparql_query(
         name = "rows_" + q,
         dataset = ":registry",
-        out_format = "tsv",
+        out_format = "json",
         query = q + ".rq",
     )
     for q in REPORT_QUERIES

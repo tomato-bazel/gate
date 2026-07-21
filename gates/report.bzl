@@ -6,9 +6,8 @@ makes `ctx.actions.declare_directory` the right primitive rather than a
 workaround: the report is one logical artifact whose contents Bazel need not
 enumerate ahead of time.
 
-Gate results arrive as TSV. That is not the natural choice — SPARQL JSON would
-be — but rules_jena's `json` and `xml` serializations both emit a ZERO-BYTE file
-and exit 0, so TSV is the only one that works. See the note in BUILD.bazel.
+Gate results arrive as SPARQL JSON — unambiguous to parse, unlike TSV, whose
+literal quoting and escaping fail quietly when mishandled.
 """
 
 def _gate_report_impl(ctx):
@@ -60,17 +59,17 @@ gate_report = rule(
         "inventory": attr.label(
             allow_single_file = True,
             mandatory = True,
-            doc = "SPARQL TSV results for the per-module inventory query.",
+            doc = "SPARQL JSON results for the per-module inventory query.",
         ),
         "selections": attr.label(
             allow_single_file = True,
             mandatory = True,
-            doc = "SPARQL TSV: which module resolves which version of which atom.",
+            doc = "SPARQL JSON: which module resolves which version of which atom.",
         ),
         "upgrades": attr.label(
             allow_single_file = True,
             mandatory = True,
-            doc = "SPARQL TSV: modules silently upgraded past their declared pin.",
+            doc = "SPARQL JSON: modules silently upgraded past their declared pin.",
         ),
         "gate_ids": attr.string_list(
             mandatory = True,
@@ -83,9 +82,9 @@ gate_report = rule(
                   "so documentation cannot drift from the gate it documents.",
         ),
         "gate_results": attr.label_list(
-            allow_files = [".tsv"],
+            allow_files = [".json"],
             mandatory = True,
-            doc = "SPARQL TSV results, index-aligned with gate_queries.",
+            doc = "SPARQL JSON results, index-aligned with gate_queries.",
         ),
         "_tool": attr.label(
             default = "//crates/gate-report:gate-report",
