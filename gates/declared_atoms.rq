@@ -1,0 +1,20 @@
+# Third-party atoms our own modules DECLARE, as opposed to reach transitively.
+#
+# The distinction matters for reading BOM coverage. The BOM is the set of
+# canonical versions `rels deps` ratchets our repos onto, so it can only govern
+# what our repos actually write down. An atom reached only through an upstream
+# module's own dependencies — abseil-cpp, googletest, gawk — has nothing for the
+# ratchet to bump, and pinning it would be inert.
+#
+# Without this split the atoms page shows 31 of 63 atoms carrying a BOM pin and
+# reads as half-covered, when in fact every atom the BOM can govern is pinned.
+PREFIX gate: <https://tbzl.dev/ns/gate#>
+
+SELECT DISTINCT ?atom
+WHERE {
+  ?m gate:isLatest true .
+  { ?m gate:dependsOn ?d } UNION { ?m gate:devDependsOn ?d }
+  ?d gate:name ?atom ;
+     gate:isExternal true .
+}
+ORDER BY ?atom

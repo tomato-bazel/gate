@@ -37,6 +37,7 @@ fn main() -> anyhow::Result<()> {
     let mut inventory: Option<String> = None;
     let mut selections: Option<String> = None;
     let mut upgrades: Option<String> = None;
+    let mut declared: Option<String> = None;
     let mut gate_specs: Vec<String> = Vec::new();
 
     let mut args = std::env::args().skip(1);
@@ -51,6 +52,7 @@ fn main() -> anyhow::Result<()> {
             "--inventory" => inventory = Some(next()?),
             "--selections" => selections = Some(next()?),
             "--upgrades" => upgrades = Some(next()?),
+            "--declared" => declared = Some(next()?),
             "--gate" => gate_specs.push(next()?),
             other => anyhow::bail!("unknown flag {other}"),
         }
@@ -95,6 +97,10 @@ fn main() -> anyhow::Result<()> {
             None => empty(),
         },
         upgrades: match &upgrades {
+            Some(p) => read_results(p)?,
+            None => empty(),
+        },
+        declared: match &declared {
             Some(p) => read_results(p)?,
             None => empty(),
         },

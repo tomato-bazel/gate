@@ -139,6 +139,7 @@ REPORT_QUERIES = GATES + [
     "inventory",
     "c1_atom_selection_by_module",
     "silent_upgrades",
+    "declared_atoms",
 ]
 
 [
@@ -154,6 +155,7 @@ REPORT_QUERIES = GATES + [
 gate_report(
     name = "report",
     bom = "@rules_tomato//bom:versions.json",
+    declared = ":rows_declared_atoms",
     gate_ids = GATES,
     gate_queries = [g + ".rq" for g in GATES],
     gate_results = [":rows_" + g for g in GATES],

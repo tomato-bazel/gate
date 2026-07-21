@@ -39,7 +39,7 @@ bazel_dep(name = "rules_jena", version = "0.3.2")
 # The canonical dependency BOM (//bom:versions.json) — the C2 policy input and
 # the "intended version" column of the atoms report. Taken as a dep rather than
 # vendored so the report cannot drift from the ratchet `rels deps` enforces.
-bazel_dep(name = "rules_tomato", version = "0.1.1")
+bazel_dep(name = "rules_tomato", version = "0.1.2")
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.toolchain(edition = "2021")

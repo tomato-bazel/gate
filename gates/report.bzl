@@ -19,8 +19,15 @@ def _gate_report_impl(ctx):
     args.add("--inventory", ctx.file.inventory)
     args.add("--selections", ctx.file.selections)
     args.add("--upgrades", ctx.file.upgrades)
+    args.add("--declared", ctx.file.declared)
 
-    inputs = [ctx.file.bom, ctx.file.inventory, ctx.file.selections, ctx.file.upgrades]
+    inputs = [
+        ctx.file.bom,
+        ctx.file.inventory,
+        ctx.file.selections,
+        ctx.file.upgrades,
+        ctx.file.declared,
+    ]
 
     # Each gate contributes both its query (the rationale that becomes the page
     # prose) and its results. Pairing them by index keeps the two lists in step;
@@ -70,6 +77,12 @@ gate_report = rule(
             allow_single_file = True,
             mandatory = True,
             doc = "SPARQL JSON: modules silently upgraded past their declared pin.",
+        ),
+        "declared": attr.label(
+            allow_single_file = True,
+            mandatory = True,
+            doc = "SPARQL JSON: atoms our modules DECLARE, as opposed to reach " +
+                  "transitively. Only these can carry a BOM pin.",
         ),
         "gate_ids": attr.string_list(
             mandatory = True,

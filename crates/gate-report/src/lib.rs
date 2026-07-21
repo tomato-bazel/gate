@@ -231,6 +231,9 @@ pub struct Report {
     pub inventory: SparqlResults,
     pub selections: SparqlResults,
     pub upgrades: SparqlResults,
+    /// Atoms our modules DECLARE. Only these can carry a BOM pin — see
+    /// `gates/declared_atoms.rq`.
+    pub declared: SparqlResults,
     pub bom: Bom,
 }
 
@@ -370,9 +373,37 @@ impl Report {
             multi
         );
 
-        b.push_str("| Atom | BOM | Live versions | Converged |\n|---|---|---|---|\n");
+        let declared: BTreeSet<&str> = self
+            .declared
+            .rows()
+            .iter()
+            .filter_map(|r| r.get("atom").copied())
+            .collect();
+        let pinned = declared.iter().filter(|a| self.bom.modules.contains_key(**a)).count();
+        let _ = writeln!(
+            b,
+            "Of those, **{} are declared** by a module here and **{} are reached only \
+             transitively**. The distinction matters for reading the BOM column: the BOM \
+             is what `rels deps` ratchets our repos onto, so it can only govern atoms our \
+             repos actually write down. **{}/{} declared atoms carry a pin**; a transitively \
+             reached atom showing `—` is not a gap, because there would be nothing for the \
+             ratchet to bump.\n",
+            declared.len(),
+            atoms.len().saturating_sub(declared.len()),
+            pinned,
+            declared.len(),
+        );
+
+        b.push_str("| Atom | Declared | BOM | Live versions | Converged |\n|---|---|---|---|---|\n");
         for (atom, versions) in &atoms {
-            let bom = self.bom.modules.get(*atom).map(|s| s.as_str()).unwrap_or("—");
+            let is_declared = declared.contains(*atom);
+            let decl = if is_declared { "yes" } else { "transitive" };
+            let bom = match self.bom.modules.get(*atom) {
+                Some(v) => v.as_str(),
+                // Only meaningful for declared atoms; blank for the rest.
+                None if is_declared => "**missing**",
+                None => "n/a",
+            };
             let live: Vec<String> = versions
                 .iter()
                 .map(|(v, ms)| format!("`{v}` ×{}", ms.len()))
@@ -380,7 +411,7 @@ impl Report {
             let ok = if versions.len() == 1 { "yes" } else { "**no**" };
             let _ = writeln!(
                 b,
-                "| `{atom}` | `{bom}` | {} | {ok} |",
+                "| `{atom}` | {decl} | {bom} | {} | {ok} |",
                 live.join("<br>")
             );
         }
