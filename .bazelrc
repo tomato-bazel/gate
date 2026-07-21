@@ -5,3 +5,16 @@ common --registry=https://bcr.bazel.build/
 
 test --test_output=errors
 test --test_summary=terse
+
+# Apache Jena 5.2 (via rules_jena) is compiled for Java 17 — class file version
+# 61.0 — while Bazel's default java_runtime is 11 (55.0). Without this the
+# SPARQL actions fail at EXECUTION with UnsupportedClassVersionError, not at
+# analysis, so a green `bazel build` on a machine with a newer default JDK tells
+# you nothing. Found by CI on the first Pages run.
+#
+# The `tool_` variants are the load-bearing pair: the Jena plugins run in the
+# exec configuration as build tools, not as targets.
+common --java_language_version=17
+common --java_runtime_version=remotejdk_17
+common --tool_java_language_version=17
+common --tool_java_runtime_version=remotejdk_17
