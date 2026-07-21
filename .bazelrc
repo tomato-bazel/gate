@@ -1,6 +1,12 @@
 common --enable_bzlmod
 
-common --registry=https://registry.fastverk.com/
+# registry.tbzl.dev, not registry.fastverk.com. There is a fleet-wide
+# consolidation in flight onto the former — fastverk/images#10 makes it entry #1
+# in the baked //ci:system_bazelrc, with per-repo PRs following across both orgs.
+# This repo was created mid-migration and `rels scaffold` still emits the legacy
+# URL, so it was born on the wrong side. All three URLs are CloudFront fronts of
+# the same content, so this is a rename, not a move.
+common --registry=https://registry.tbzl.dev/
 common --registry=https://bcr.bazel.build/
 
 test --test_output=errors
