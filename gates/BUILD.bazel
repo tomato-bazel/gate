@@ -15,10 +15,12 @@ one that matches nothing because the data is clean.
                                 committed golden, so both over- and
                                 under-matching fail.
 
-The real registry projection (`testdata/registry.ttl`) is deliberately NOT
-wired to a test. It currently violates every one of these, which is the whole
-premise of the remediation programme — it is exposed as `report_*` targets to
-`bazel run`, and becomes a test when the corpus is green.
+The real registry projection (`testdata/registry.ttl`) is wired to a test ONE
+GATE AT A TIME, as each reaches zero — see `ENFORCED_ON_REGISTRY`. Until a gate
+gets there it is exposed as a `report_*` target to `bazel run`, and regressions
+are held off by the ratchet in bazel-registry's PR CI, which fails a PR that
+raises any count. Wiring a still-red gate here would just make `//...` red and
+train everyone to ignore it.
 """
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
@@ -81,6 +83,30 @@ sparql_query_smoke_test(
         query = g + ".rq",
     )
     for g in GATES
+]
+
+# ── Enforced against the LIVE registry projection ───────────────────────────
+#
+# A gate joins this list the moment its count on the real registry reaches
+# zero. From then on it does not merely ratchet — it BLOCKS: any regression in
+# the committed projection turns `bazel test //...` red here, alongside the
+# bazel-registry ratchet that stops one landing in the first place.
+#
+# S4 (2026-07-26): cleared by republishing rules_schema_org 0.0.3,
+# rules_huggingface 0.0.4, rules_lora 0.1.4 and spec 0.6.3 without their
+# local_path_overrides. rules_schema_org 0.0.1 turned out not to build at all
+# once its override came off, which is what the invariant is for.
+ENFORCED_ON_REGISTRY = [
+    "s4_no_override_in_published_module",
+]
+
+[
+    sparql_query_test(
+        name = g + "_holds_on_registry",
+        dataset = ":registry",
+        query = g + ".rq",
+    )
+    for g in ENFORCED_ON_REGISTRY
 ]
 
 [
