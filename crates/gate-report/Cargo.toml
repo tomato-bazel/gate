@@ -10,6 +10,13 @@ repository.workspace = true
 name = "gate-report"
 path = "src/main.rs"
 
+# The PR ratchet: compare two reports and fail on an increase. Separate binary
+# rather than a flag on gate-report, because projecting and judging are
+# different jobs and only one of them belongs in a consumer's CI.
+[[bin]]
+name = "gate-ratchet"
+path = "src/ratchet.rs"
+
 [dependencies]
 anyhow.workspace = true
 prost.workspace = true
