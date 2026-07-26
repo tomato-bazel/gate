@@ -57,6 +57,14 @@ is a single query.
 |---|---|
 | `bzlmod` | `MODULE.bazel` evaluation, the module graph, MVS, registry client |
 | `gate-rdf` | Projection to Turtle. Facts only — no policy |
+| `gate-report` | Gate results → `tomato.gate.v1.ConformanceReport`. Projects; decides nothing |
+| `gate-snapshot` | Upstream registry metadata snapshots, for `--check` drift |
+
+The report is a **proto**, not a rendered document: it crosses into
+`tomato-bazel/docs`, which builds docs.tbzl.dev/conformance/ from it with no
+Bazel and no JVM. Publishing `//gates:report_bundle` ships the message alongside
+its own `FileDescriptorSet`, so the consumer needs neither a copy of the schema
+nor a generated client.
 
 `bzlmod` is also roma's unstarted **B1** (`roma/docs/bzlmod-strategy.md`: own
 parse + MVS + registry fetch). Building it here means the registry gets gating
@@ -78,9 +86,18 @@ over the latest version of each of the 74 modules:
 | D3 | 34 repo names chosen on a *shared* extension without a module namespace |
 | V1 | dropped — `compatibility_level` is a no-op as of Bazel 8.6.0 / 9.1.0 |
 
-The same four run as gates over the projection
-(`bazel run //gates:report_<gate>`): S4 5, D2 57 registrations, D3 34, C1 19
-version pairs.
+The gates themselves run over the projection
+(`bazel run //gates:report_<gate>`), and currently find: **S4 5, D2 58
+registrations across 31 modules, D3 35, C1 26 version pairs over 19 contested
+atoms, S6 1** — 125 findings across 5 invariants, none of them clean, over 76
+modules of which 39 have at least one finding.
+
+Those numbers are published, not just printed. `bazel build //gates:report`
+projects them into a `tomato.gate.v1.ConformanceReport`, and
+[docs.tbzl.dev/conformance/](https://docs.tbzl.dev/conformance/) renders it —
+the scoreboard, a page per invariant with its rationale taken from the `.rq`
+header, the third-party atom frontier, and each module's findings on that
+module's own reference page.
 
 `compatibility_level` deserves a note, because it changes what C1 is *for*.
 Bazel made it and `max_compatibility_level` no-ops, so there is no longer any

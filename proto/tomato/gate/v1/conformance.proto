@@ -1,0 +1,202 @@
+// The registry conformance report, as a wire artifact.
+//
+// This is the seam between `gate` and the docs site. gate runs the gates under
+// Bazel (which needs a projection of the live registry and a JVM for Jena) and
+// emits this message; `tomato-bazel/docs` fetches it at build time and renders
+// docs.tbzl.dev/conformance/. Neither side needs the other's toolchain.
+//
+// It is a proto rather than ad-hoc JSON because it crosses a repo, a language
+// and a build-system boundary, and because a second consumer is foreseeable —
+// a badge service, or the registry's own health dashboard.
+//
+// NOTHING HERE DECIDES ANYTHING. Every count and flag is derived from SPARQL
+// query output; if a number in this message is wrong, the query is wrong. In
+// particular there is no `passed`/`failed`: a gate with zero rows holds, and
+// that is the reader's inference to draw, not ours to encode.
+//
+// Prose lives in exactly two places. Per-gate rationale is `Gate.rationale_md`,
+// extracted from the `.rq` file's own header comment so it cannot drift from
+// the gate it documents. Everything else — the narrative, the framing of the
+// atoms table — is hand-authored on the docs site, because it is editorial and
+// does not belong in a build artifact.
+
+syntax = "proto3";
+
+package tomato.gate.v1;
+
+// One run of the gates over one projection of the registry.
+message ConformanceReport {
+  // Where the projection came from — the bazel-registry URL, ideally with the
+  // commit it was cloned at.
+  string generated_from = 1;
+
+  // RFC 3339. Passed in by the caller rather than read from a clock, so the
+  // report stays a pure function of (projection x queries) and rebuilds
+  // reproducibly. The docs site renders this as "as of …" and warns when it
+  // goes stale, which is how a silently-failed weekly job gets noticed.
+  string generated_at = 2;
+
+  Totals totals = 3;
+
+  // In the order `gates/BUILD.bazel` declares them (`GATES`), which is
+  // family-grouped rather than alphabetical.
+  repeated Gate gates = 4;
+
+  // REMEDIATION ORDER: most findings first, ties broken by name. That is a
+  // deliberate choice — the scoreboard's job is to say what to fix next — so
+  // consumers wanting a lookup should index by `Module.name`.
+  repeated Module modules = 5;
+
+  // The frontier: third-party modules the registry depends on. Alphabetical.
+  repeated Atom atoms = 6;
+
+  repeated BomNote bom_notes = 7;
+
+  // A module declared one version and MVS gave it a higher one. Reported, never
+  // gated: the fix is C1 (one live version per atom), not forbidding upgrades.
+  repeated SilentUpgrade silent_upgrades = 8;
+}
+
+// Pre-computed aggregates, so the site's prose can interpolate them without
+// re-deriving — and so the two never disagree.
+message Totals {
+  uint32 findings = 1;
+  uint32 gates = 2;
+  uint32 clean_gates = 3;
+  uint32 modules = 4;
+  uint32 dirty_modules = 5;
+  uint32 atoms = 6;
+  uint32 multi_version_atoms = 7;
+
+  // Atoms a module here DECLARES, versus reaches only transitively. The
+  // distinction is what makes BOM coverage readable: the BOM is what `rels
+  // deps` ratchets our repos onto, so it can only govern what our repos
+  // actually write down. Without the split, coverage reads as half-done when
+  // in fact every atom the BOM *can* govern is pinned.
+  uint32 declared_atoms = 8;
+  uint32 pinned_declared_atoms = 9;
+}
+
+// One invariant.
+message Gate {
+  // The query's basename, e.g. `s4_no_override_in_published_module`.
+  string id = 1;
+
+  // Derived from the id's leading alphanumerics: `S4`, `D2`, `C1`.
+  string code = 2;
+
+  // First line of the `.rq` header, minus the leading `<CODE> — `.
+  string title = 3;
+
+  // From the id's first letter: Supply chain, Convergence, Dev-dep &
+  // toolchains, Capability, Semver.
+  string family = 4;
+
+  // The rest of the `.rq` header comment, verbatim, as markdown. Indentation is
+  // preserved, because the quoted Bazel errors in D2/D3 are code blocks.
+  string rationale_md = 5;
+
+  // Whether the query exposes a `?module` variable. A registry-level gate does
+  // not: C1 says "this atom is live at two versions", not "this module is at
+  // fault", and forcing that onto a module's page would misattribute blame.
+  bool module_scoped = 6;
+
+  // The query's own variable order, NOT alphabetised — the author chose that
+  // order to make the counterexample readable.
+  repeated string vars = 7;
+
+  // Each row is a counterexample. Empty means the invariant currently holds.
+  repeated Row rows = 8;
+
+  string source_url = 9;
+}
+
+// Cells are index-aligned with the enclosing `vars`. A missing binding is an
+// empty string; SPARQL's `type`/`datatype`/`xml:lang` are dropped, so every
+// cell is already a display string.
+message Row {
+  repeated string cells = 1;
+}
+
+message Module {
+  string name = 1;
+
+  // Latest published version, and the provenance of that release.
+  string version = 2;
+  string homepage = 3;
+  string integrity = 4;
+
+  // "rules" or "other".
+  string kind = 5;
+
+  // Sum of rows across `findings` — the scoreboard's sort key.
+  uint32 finding_count = 6;
+
+  // One entry per module-scoped gate this module trips.
+  repeated Finding findings = 7;
+
+  // Atoms where this module resolves a different version than someone else
+  // does. The actionable form of a registry-level C1 finding.
+  repeated ContestedAtom contested = 8;
+}
+
+message Finding {
+  string gate_id = 1;
+
+  // As `Gate.vars`, minus the `module` column — on a module's page, the module
+  // is the page.
+  repeated string vars = 2;
+  repeated Row rows = 3;
+}
+
+message Atom {
+  string name = 1;
+
+  // False means reached only transitively, through an upstream module's own
+  // dependencies. Such an atom showing no BOM pin is not a gap: there would be
+  // nothing for the ratchet to bump.
+  bool declared = 2;
+
+  // Empty when unpinned.
+  string bom_version = 3;
+
+  // ORDER IS LEXICAL, NOT SEMANTIC. Sorting bzlmod versions correctly needs
+  // bzlmod's own comparator (lexically "8.15.2" < "8.6.1" while semantically
+  // 8.6.1 < 8.15.2), and this field is grouped by a plain string key. Do not
+  // present it as lowest-to-highest.
+  repeated LiveVersion live = 4;
+
+  // Exactly one live version. Since Bazel 8.6.0 / 9.1.0 made
+  // `compatibility_level` and `max_compatibility_level` no-ops, there is no
+  // in-band way left for a module to signal a breaking change — MVS takes
+  // max-of-minimums and the consumer finds out at build time, or doesn't. So
+  // one live version per atom is the COMPATIBILITY mechanism, not a tidiness
+  // goal.
+  bool converged = 5;
+}
+
+message LiveVersion {
+  string version = 1;
+
+  // Distinct latest-modules resolving this version.
+  uint32 count = 2;
+}
+
+message ContestedAtom {
+  string atom = 1;
+  string resolved_here = 2;
+  repeated LiveVersion elsewhere = 3;
+}
+
+// Why an atom is pinned where it is, from `rules_tomato//bom/versions.json`.
+message BomNote {
+  string atom = 1;
+  string note = 2;
+}
+
+message SilentUpgrade {
+  string module = 1;
+  string atom = 2;
+  string declared = 3;
+  string got = 4;
+}

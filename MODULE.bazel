@@ -24,6 +24,14 @@ bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
 bazel_dep(name = "rules_rust", version = "0.70.0")
 
+# The conformance report's wire contract — //proto/tomato/gate/v1. The report
+# crosses into tomato-bazel/docs, which renders docs.tbzl.dev/conformance/ from
+# it, so the shape is a proto rather than whatever `serde_json` happened to
+# produce. rules_rust_prost tracks rules_rust's version exactly.
+bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "protobuf", version = "33.4")
+bazel_dep(name = "rules_rust_prost", version = "0.70.0")
+
 # The gate primitives. `sparql_query_test` is a zero-row gate: run a `.rq` and
 # fail if the result set is non-empty. rules_jena supplies the Jena-backed
 # implementations of the SPARQL + SHACL toolchain types rules_rdf declares.
@@ -63,6 +71,20 @@ register_toolchains(
     dev_dependency = True,
 )
 
+# The tonic-free prost toolchain (//proto), dev-scoped for exactly the reason
+# above — and with a second reason on top. Registering it non-dev would put a
+# prost codegen toolchain, and through the default one tokio, in the closure of
+# every consumer of `gate`. It is only ever needed to BUILD the report binary,
+# which happens in this repo's CI and nowhere else.
+#
+# It must also outrank @rules_rust_prost's own default toolchain, which a
+# dev-only root registration does: the root module's registrations are resolved
+# first.
+register_toolchains(
+    "//proto:prost_toolchain",
+    dev_dependency = True,
+)
+
 # @gate_crates — the crate_universe for //crates/*, resolved from the workspace
 # Cargo.toml + Cargo.lock.
 #
@@ -85,13 +107,16 @@ crate.from_cargo(
 )
 use_repo(crate, "gate_crates")
 
-# Dev-only: docs + stardoc for the //gates rule wrappers.
+# Dev-only: stardoc for the //gates rule wrappers.
 #
-# `brand` is dev-only DELIBERATELY. It registers the tectonic (LaTeX) toolchain
-# non-dev for its own targets, so a non-dev dep here would impose that on every
-# consumer of `gate` — which is precisely the D2 leakage this repo exists to
-# detect. We only want @brand//mdbook:theme, a static filegroup. Registration
-# costs module resolution, not a download, unless a tectonic action runs.
-bazel_dep(name = "brand", version = "0.3.1", dev_dependency = True)
+# `brand` used to be here, dev-scoped, for @brand//mdbook:theme — the mdBook this
+# repo published before the report moved to docs.tbzl.dev. Two reasons it is gone
+# and should not come back:
+#
+#   * Nothing renders here any more. The report is a proto; the theme belongs to
+#     whoever renders it.
+#   * It was the WRONG brand anyway. `brand` is fastverk/brand (amber #F2C46A on
+#     cream), not tomato_brand (tomato red #E64A33, calyx green #3FA34D), so the
+#     conformance book read as a fastverk artifact sitting under a tbzl.dev URL.
 bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True)

@@ -1,17 +1,26 @@
-# The registry conformance report, published to GitHub Pages.
+# The registry conformance report, published to GitHub Pages as DATA.
 #
 # Regenerates from the LIVE registry rather than the committed
 # gates/testdata/registry.ttl snapshot: that snapshot exists so `bazel test`
 # is hermetic, but a report built from it would be as stale as the last commit.
 #
-# No credentials. bazel-registry is public and registry.fastverk.com serves the
-# module metadata unauthenticated, so unlike ratchet.yml / report.yml /
-# conformance.yml in the registry repo, this needs no fastverk App token.
+# No credentials. bazel-registry is public and the registry CDN serves module
+# metadata unauthenticated, so unlike ratchet.yml / report.yml / conformance.yml
+# in the registry repo, this needs no fastverk App token.
 #
-# Deploys to this repo's OWN Pages (tomato-bazel.github.io/gate/). Deliberately
-# not the registry's Pages: that already publishes the ecosystem health
-# dashboard, and Pages serves one artifact per repo, so sharing it would replace
-# what is currently up.
+# WHAT THIS PUBLISHES CHANGED. It used to render an mdBook and serve the whole
+# site from this repo's Pages. The rendering now lives in tomato-bazel/docs,
+# which builds docs.tbzl.dev/conformance/ — one site, one theme, one search
+# index, and a module's findings on the same page as its `bazel_dep` line. So
+# what goes to Pages here is the report itself plus the schema to decode it,
+# and an index.html pointing a human at the rendered version:
+#
+#   tomato-bazel.github.io/gate/conformance.binpb
+#   tomato-bazel.github.io/gate/conformance-descriptor.binpb
+#
+# Still this repo's OWN Pages, and still deliberately not the registry's: that
+# already publishes the ecosystem health dashboard, and Pages serves one artifact
+# per repo, so sharing it would replace what is currently up.
 name: conformance-report
 
 on:
@@ -32,11 +41,6 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
-env:
-  # Verified against the actual release assets — the 0.4.x asset naming
-  # differs and a wrong pin 404s only at deploy time.
-  MDBOOK_VERSION: "0.5.4"
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -45,6 +49,12 @@ jobs:
 
       - name: Clone the live registry
         run: git clone --depth 1 https://github.com/tomato-bazel/bazel-registry.git _registry
+
+      - name: Record which registry commit this report describes
+        id: registry
+        run: |
+          sha="$(git -C _registry rev-parse HEAD)"
+          echo "from=https://github.com/tomato-bazel/bazel-registry@${sha}" >> "$GITHUB_OUTPUT"
 
       - uses: bazel-contrib/setup-bazel@0.10.0
         with:
@@ -55,8 +65,7 @@ jobs:
       # --allow-unresolved: the registry genuinely contains an unresolvable
       # module (rules_cc_host has a metadata.json but no version directories,
       # because its only version was yanked). A periodic report should surface
-      # that, not fail forever on it. The proper fix is an S6 gate on
-      # metadata/directory drift.
+      # that, not fail forever on it — and S6 now gates exactly that drift.
       # --vendor is load-bearing, not optional. Without the vendored upstream
       # closure, every third-party module resolves as a LEAF: MVS under-selects,
       # and the C-family gates only see atoms our own modules name directly.
@@ -68,35 +77,69 @@ jobs:
             "$PWD/_registry" "$PWD/gates/testdata/registry.ttl" \
             --vendor "$PWD/vendor/bcr" --allow-unresolved
 
-      - name: Render the report
-        run: bazel build //gates:report
-
-      # The brand theme is dev-only in MODULE.bazel: `brand` registers the
-      # tectonic (LaTeX) toolchain non-dev for its own targets, and taking it as
-      # a real dep would impose that on every consumer of `gate` — the exact D2
-      # leakage this repo detects.
-      - name: Stage the brand theme
-        run: bazel build //docs:theme
-
-      - name: Assemble the book
+      # The provenance flags are what make the report honest about its own age.
+      # They default to empty so a local build stays byte-reproducible; only a
+      # published report claims a timestamp. docs.tbzl.dev renders it as "as of
+      # …" and warns when it goes stale, which is how a silently-failed run here
+      # becomes visible instead of showing confident stale numbers.
+      - name: Project the report
         run: |
-          mkdir -p docs/src docs/theme
-          cp -R bazel-bin/gates/report_src/. docs/src/
-          cp -R bazel-bin/docs/theme/. docs/theme/
-          chmod -R u+w docs/src docs/theme
-          echo "pages generated: $(find docs/src -name '*.md' | wc -l)"
+          bazel build //gates:report_bundle \
+            "--//gates:generated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            "--//gates:generated_from=${{ steps.registry.outputs.from }}"
 
-      - name: Install mdbook
+      - name: Assemble the Pages payload
         run: |
-          curl -fsSL \
-            "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
-            | tar -xz -C /usr/local/bin
-
-      - run: mdbook build docs
+          mkdir -p _site
+          # bazel-bin is read-only; copy then chmod.
+          cp bazel-bin/gates/report.binpb _site/conformance.binpb
+          cp bazel-bin/gates/conformance-descriptor.binpb _site/
+          chmod -R u+w _site
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>tomato-bazel registry conformance</title>
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <style>
+            :root { color-scheme: light dark }
+            body { margin: 0; min-height: 100vh; display: grid; place-items: center;
+                   background: #FBFAF8; color: #1A1917; padding: 2rem;
+                   font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif }
+            main { max-width: 34rem }
+            h1 { font-size: 1.5rem; letter-spacing: -.02em; margin: 0 0 .75rem }
+            a { color: #C0392B }
+            .cta { display: inline-block; margin: .5rem 0 1.5rem; padding: .6rem 1.1rem;
+                   border: 1px solid #DAD5C9; border-radius: 10px; text-decoration: none;
+                   font-weight: 600 }
+            code { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace }
+            p.small { color: #6E6A61; font-size: .875rem }
+            @media (prefers-color-scheme: dark) {
+              body { background: #15161A; color: #D9D5CC }
+              a { color: #F2664E } .cta { border-color: rgba(236,231,218,.19) }
+              p.small { color: #9A9488 }
+            }
+          </style>
+          <main>
+            <h1>The conformance report moved</h1>
+            <p>It is now part of the tomato-bazel developer docs, with the rest of
+               the registry reference.</p>
+            <p><a class="cta" href="https://docs.tbzl.dev/conformance/">Registry conformance
+               on docs.tbzl.dev &rarr;</a></p>
+            <p class="small">This URL still serves the report as data — a
+               <code>tomato.gate.v1.ConformanceReport</code> plus its own descriptor set,
+               so it can be decoded without a copy of the schema:</p>
+            <p class="small">
+              <a href="conformance.binpb">conformance.binpb</a> &middot;
+              <a href="conformance-descriptor.binpb">conformance-descriptor.binpb</a> &middot;
+              <a href="https://github.com/tomato-bazel/gate/blob/main/proto/tomato/gate/v1/conformance.proto">conformance.proto</a>
+            </p>
+          </main>
+          HTML
+          ls -la _site
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/book
+          path: _site
 
   deploy:
     needs: build
@@ -107,3 +150,14 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+# PICKUP IS PULL, NOT PUSH. tomato-bazel/docs rebuilds on its own schedule —
+# nightly, plus a Monday cron timed to land after this job. There is deliberately
+# no `repository_dispatch` here:
+#
+# The default GITHUB_TOKEN is scoped to this repo and cannot dispatch across one,
+# so a push would need a PAT (or an App key) held as a secret in this repo, with
+# `contents: write` on docs — a credential to rotate, leak and soft-fail around.
+# For a WEEKLY artifact that buys a few hours. A cron on the consumer's side
+# costs nothing and cannot silently stop working: if docs doesn't rebuild, its
+# own schedule is broken, which is visible in one place rather than two.

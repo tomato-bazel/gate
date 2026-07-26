@@ -1,0 +1,41 @@
+"""The prost toolchain for //proto/... — deliberately tonic-free.
+
+`rules_rust_prost` ships a default toolchain that wires `tonic_runtime` into
+every `rust_prost_library`, which drags tokio + mio + socket2 into the dep
+graph. Nothing here speaks gRPC: `gate-report` serializes one message to a file.
+Taking the default would make the report binary depend on an async runtime it
+never starts, and would put tokio in the closure of a module the registry
+governs.
+
+Same shape as meridian//rust:prost_toolchain, which exists for the adjacent
+reason (its wasm target can't compile tokio). Registered from MODULE.bazel, and
+registered as a DEV dependency — see the note there.
+"""
+
+load("@rules_rust//rust:defs.bzl", "rust_library_group")
+load("@rules_rust_prost//:defs.bzl", "rust_prost_toolchain")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library_group(
+    name = "prost_runtime",
+    deps = ["@gate_crates//:prost"],
+)
+
+rust_prost_toolchain(
+    name = "prost_toolchain_impl",
+    prost_plugin = "@rules_rust_prost//private/3rdparty/crates:protoc-gen-prost__protoc-gen-prost",
+    prost_plugin_flag = "--plugin=protoc-gen-prost=%s",
+    prost_runtime = ":prost_runtime",
+    prost_types = "@gate_crates//:prost-types",
+    # The toolchain checks tonic attrs all-or-nothing, and `tonic_plugin_flag`
+    # has a non-empty default. Clearing it explicitly is what makes the
+    # zero-tonic configuration valid rather than half-configured.
+    tonic_plugin_flag = "",
+)
+
+toolchain(
+    name = "prost_toolchain",
+    toolchain = ":prost_toolchain_impl",
+    toolchain_type = "@rules_rust_prost//:toolchain_type",
+)

@@ -1,0 +1,31 @@
+"""tomato.gate.v1 — the conformance report wire contract.
+
+The report crosses a repo boundary (gate → tomato-bazel/docs), a language
+boundary (Rust → JS) and a build-system boundary (Bazel → npm), so it is a proto
+rather than ad-hoc JSON. See conformance.proto's own header for the rest.
+
+`strip_import_prefix` makes the descriptor record the file as
+`tomato/gate/v1/conformance.proto` rather than `proto/tomato/...`, so the path in
+the descriptor matches the proto package. Nothing imports this file today; the
+alignment is for when something does.
+"""
+
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_rust_prost//:defs.bzl", "rust_prost_library")
+
+package(default_visibility = ["//visibility:public"])
+
+proto_library(
+    name = "conformance_proto",
+    srcs = ["conformance.proto"],
+    strip_import_prefix = "/proto",
+)
+
+# NOTE: the emitted Rust CRATE is named after the `proto` target, not after this
+# one — `conformance_proto`, with the module path mirroring the proto package. So
+# Rust consumers write `conformance_proto::tomato::gate::v1` while Bazel
+# consumers depend on `:conformance_rs`.
+rust_prost_library(
+    name = "conformance_rs",
+    proto = ":conformance_proto",
+)
