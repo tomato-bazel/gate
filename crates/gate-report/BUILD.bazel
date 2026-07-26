@@ -1,16 +1,24 @@
-"""gate-report — render gate results as an mdBook source tree."""
+"""gate-report — project gate results into the tomato.gate.v1 report.
+
+The generated proto types arrive as a sibling crate from rules_rust_prost
+(`conformance_rs`), not from a build script, so there is no cargo build path for
+this crate. That is deliberate: gate builds with Bazel, and Cargo.toml exists for
+crate_universe to read.
+"""
 
 load("@gate_crates//:defs.bzl", "all_crate_deps")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_test")
 
 package(default_visibility = ["//visibility:public"])
 
+PROTO_DEPS = ["//proto/tomato/gate/v1:conformance_rs"]
+
 rust_library(
     name = "gate_report",
     srcs = ["src/lib.rs"],
     crate_root = "src/lib.rs",
     edition = "2021",
-    deps = all_crate_deps(normal = True),
+    deps = PROTO_DEPS + all_crate_deps(normal = True),
 )
 
 rust_test(
@@ -24,7 +32,7 @@ rust_binary(
     srcs = ["src/main.rs"],
     crate_root = "src/main.rs",
     edition = "2021",
-    deps = [":gate_report"] + all_crate_deps(normal = True),
+    deps = [":gate_report"] + PROTO_DEPS + all_crate_deps(normal = True),
 )
 
 exports_files(["Cargo.toml"])

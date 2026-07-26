@@ -1,6 +1,6 @@
 [package]
 name = "gate-report"
-description = "Render gate results as an mdBook source tree for tbzl.dev."
+description = "Project gate results into the tomato.gate.v1 conformance report."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -12,5 +12,19 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow.workspace = true
+prost.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+
+# Declared, not used. `rust_prost_toolchain` requires a `prost_types` target, and
+# crate_universe only exposes a crate that some workspace member asks for — a
+# `[workspace.dependencies]` entry alone generates nothing. conformance.proto
+# uses no well-known types, so nothing in the generated code references this; it
+# exists so //proto:prost_toolchain_impl can name it.
+prost-types.workspace = true
+
+# Under Bazel the generated tomato.gate.v1 types come from
+# //proto/tomato/gate/v1:conformance_rs_proto, injected as a dep by
+# crates/gate-report/BUILD.bazel. There is no cargo build script, so a plain
+# `cargo build` of this crate does NOT work — that is fine and deliberate: gate
+# builds with Bazel. Cargo.toml exists for crate_universe's benefit.

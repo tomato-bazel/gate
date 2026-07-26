@@ -21,6 +21,7 @@ premise of the remediation programme — it is exposed as `report_*` targets to
 `bazel run`, and becomes a test when the corpus is green.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@rules_rdf//rdf:dataset.bzl", "rdf_dataset")
 load("@rules_rdf//sparql:defs.bzl", "sparql_query", "sparql_query_smoke_test", "sparql_query_test")
@@ -115,12 +116,13 @@ sparql_query_smoke_test(
 ]
 
 # ---------------------------------------------------------------------------
-# The tbzl.dev conformance report
+# The docs.tbzl.dev conformance report
 # ---------------------------------------------------------------------------
 #
-# Gate results, rendered as an mdBook source tree. SPARQL JSON, because it is
-# unambiguous to parse — TSV would need literal unquoting and escape handling
-# that fails quietly rather than loudly.
+# Gate results, projected into a tomato.gate.v1.ConformanceReport and consumed by
+# tomato-bazel/docs. SPARQL JSON on the way in, because it is unambiguous to
+# parse — TSV would need literal unquoting and escape handling that fails quietly
+# rather than loudly.
 #
 # A previous revision claimed rules_jena could not emit JSON. That was WRONG:
 # running jena_sparql directly emits JSON fine, and so does a fresh Bazel
@@ -153,6 +155,26 @@ REPORT_QUERIES = GATES + [
     for q in REPORT_QUERIES
 ]
 
+# Provenance, as build settings rather than baked-in strings, so CI can stamp a
+# report without editing a BUILD file:
+#
+#   bazel build //gates:report \
+#     --//gates:generated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+#     --//gates:generated_from=https://github.com/tomato-bazel/bazel-registry@<sha>
+#
+# Both default to EMPTY. A local `bazel build //gates:report` is therefore
+# reproducible — the same projection gives the same bytes — and an unstamped
+# report is visibly unstamped rather than quietly claiming to be current.
+string_flag(
+    name = "generated_at",
+    build_setting_default = "",
+)
+
+string_flag(
+    name = "generated_from",
+    build_setting_default = "",
+)
+
 gate_report(
     name = "report",
     bom = "@rules_tomato//bom:versions.json",
@@ -160,7 +182,32 @@ gate_report(
     gate_ids = GATES,
     gate_queries = [g + ".rq" for g in GATES],
     gate_results = [":rows_" + g for g in GATES],
+    generated_at = ":generated_at",
+    generated_from = ":generated_from",
     inventory = ":rows_inventory",
     selections = ":rows_c1_atom_selection_by_module",
     upgrades = ":rows_silent_upgrades",
+)
+
+# The report's own schema, shipped beside it so a consumer can decode the message
+# without a copy of the .proto. A `proto_library`'s default output IS its
+# descriptor set, so this is a rename, not a build step.
+#
+# This is what lets tomato-bazel/docs read the report with nothing but
+# protobufjs: fetch two files, load the descriptor, decode. No generated client
+# to keep in sync, and no second copy of the schema to drift.
+genrule(
+    name = "conformance_descriptor",
+    srcs = ["//proto/tomato/gate/v1:conformance_proto"],
+    outs = ["conformance-descriptor.binpb"],
+    cmd = "cp $< $@",
+)
+
+# What CI publishes: the report plus the schema to read it with.
+filegroup(
+    name = "report_bundle",
+    srcs = [
+        ":conformance_descriptor",
+        ":report",
+    ],
 )

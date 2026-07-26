@@ -33,6 +33,13 @@ reqwest = { version = "0.12", default-features = false, features = ["blocking", 
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 
+# prost, for the conformance report's wire type (//proto/tomato/gate/v1). The
+# generated code comes from rules_rust_prost, not from a build script, so these
+# are runtime-only — nothing here shells out to protoc. `prost-types` is required
+# by the prost TOOLCHAIN even though conformance.proto uses no well-known types.
+prost = { version = "0.13", default-features = false, features = ["std", "derive"] }
+prost-types = "0.13"
+
 [profile.release]
 opt-level = 3
 lto = "thin"

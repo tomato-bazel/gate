@@ -1,22 +1,27 @@
-//! `gate-report` — render gate results into an mdBook source tree.
+//! `gate-report` — project gate results into a `tomato.gate.v1` report.
 //!
-//!     gate-report --out <dir> --bom <versions.json> \
+//!     gate-report --out-binpb <conformance.binpb> \
+//!                 --generated-at <rfc3339> \
+//!                 --generated-from <registry url> \
+//!                 --bom <versions.json> \
 //!                 --inventory <inventory.json> \
 //!                 --selections <c1_by_module.json> \
 //!                 --upgrades <silent_upgrades.json> \
+//!                 --declared <declared_atoms.json> \
 //!                 --gate <id>=<query.rq>=<results.json> ...
 //!
 //! Every input is a build artifact: the JSON files come from `sparql_query`
 //! targets, so the report is a pure function of the projection plus the
-//! queries. There is no hidden state and nothing is fetched.
+//! queries. There is no hidden state and nothing is fetched — including the
+//! timestamp, which is why `--generated-at` is a flag rather than a clock read.
 
 use std::path::PathBuf;
 
-use gate_report::{Bom, Gate, Report, SparqlResults};
+use gate_report::{pb, Bom, Gate, Report, SparqlResults};
+use prost::Message as _;
 
 fn read_results(path: &str) -> anyhow::Result<SparqlResults> {
-    let text = std::fs::read_to_string(path)
-        .map_err(|e| anyhow::anyhow!("read {path}: {e}"))?;
+    let text = std::fs::read_to_string(path).map_err(|e| anyhow::anyhow!("read {path}: {e}"))?;
     // An empty file is not an empty result set. A query with no matches still
     // emits a full JSON document with an empty bindings array, so zero bytes
     // means the action produced nothing — a truncated write, a cached empty
@@ -33,6 +38,8 @@ fn read_results(path: &str) -> anyhow::Result<SparqlResults> {
 
 fn main() -> anyhow::Result<()> {
     let mut out: Option<PathBuf> = None;
+    let mut generated_at: Option<String> = None;
+    let mut generated_from: Option<String> = None;
     let mut bom_path: Option<String> = None;
     let mut inventory: Option<String> = None;
     let mut selections: Option<String> = None;
@@ -47,7 +54,9 @@ fn main() -> anyhow::Result<()> {
                 .ok_or_else(|| anyhow::anyhow!("{a} expects a value"))
         };
         match a.as_str() {
-            "--out" => out = Some(PathBuf::from(next()?)),
+            "--out-binpb" => out = Some(PathBuf::from(next()?)),
+            "--generated-at" => generated_at = Some(next()?),
+            "--generated-from" => generated_from = Some(next()?),
             "--bom" => bom_path = Some(next()?),
             "--inventory" => inventory = Some(next()?),
             "--selections" => selections = Some(next()?),
@@ -58,7 +67,7 @@ fn main() -> anyhow::Result<()> {
         }
     }
 
-    let out = out.ok_or_else(|| anyhow::anyhow!("--out is required"))?;
+    let out = out.ok_or_else(|| anyhow::anyhow!("--out-binpb is required"))?;
     let bom: Bom = match &bom_path {
         Some(p) => serde_json::from_str(&std::fs::read_to_string(p)?)?,
         None => Bom::default(),
@@ -107,14 +116,32 @@ fn main() -> anyhow::Result<()> {
         bom,
     };
 
-    let pages = report.render();
-    for page in &pages {
-        let path = out.join(&page.path);
-        if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-        std::fs::write(&path, &page.body)?;
+    // An unset timestamp stays EMPTY rather than defaulting to "now". The docs
+    // site treats a missing `generated_at` as unknown and says so; inventing one
+    // would make a stale report look fresh, which is the failure this field
+    // exists to expose.
+    let msg: pb::ConformanceReport = report.to_proto(
+        generated_at.as_deref().unwrap_or(""),
+        generated_from.as_deref().unwrap_or(""),
+    );
+
+    if let Some(parent) = out.parent() {
+        std::fs::create_dir_all(parent)?;
     }
-    eprintln!("gate-report: wrote {} pages to {}", pages.len(), out.display());
+    std::fs::write(&out, msg.encode_to_vec())?;
+
+    let t = msg.totals.unwrap_or_default();
+    eprintln!(
+        "gate-report: {} findings across {} invariants ({} clean), \
+         {} modules ({} with findings), {} atoms ({} multi-version) -> {}",
+        t.findings,
+        t.gates,
+        t.clean_gates,
+        t.modules,
+        t.dirty_modules,
+        t.atoms,
+        t.multi_version_atoms,
+        out.display()
+    );
     Ok(())
 }
