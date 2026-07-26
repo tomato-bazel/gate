@@ -35,4 +35,14 @@ rust_binary(
     deps = [":gate_report"] + PROTO_DEPS + all_crate_deps(normal = True),
 )
 
+# The PR ratchet, run by tomato-bazel/bazel-registry on every pull request.
+# Compares two ConformanceReports and fails if any invariant got worse.
+rust_binary(
+    name = "gate-ratchet",
+    srcs = ["src/ratchet.rs"],
+    crate_root = "src/ratchet.rs",
+    edition = "2021",
+    deps = [":gate_report"] + PROTO_DEPS + all_crate_deps(normal = True),
+)
+
 exports_files(["Cargo.toml"])
