@@ -35,6 +35,37 @@
     gate:registersToolchain "@rust_toolchains//:all" ;
     gate:registersToolchainDev "@only_mine//:all" .
 
+# D2, the UNSCOPED exemption: a declared provider registering non-dev is exempt
+# outright. Kept here rather than leaning on declarations.ttl's real rules_jena
+# entry so the fixture proves the clause on its own terms — and so a future edit
+# to the live policy cannot quietly change what this test covers.
+<https://tbzl.dev/m/rules_whole/1.0.0> a gate:ModuleVersion, gate:RulesModule ;
+    gate:name "rules_whole" ;
+    gate:version "1.0.0" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "rules_whole", "whole" ;
+    gate:registersToolchain "//whole:a_toolchain_def" ;
+    gate:registersToolchain "//whole:b_toolchain_def" .
+
+[] gate:toolchainProviderFor "rules_whole" .
+
+# D2, the SCOPED exemption, and the row that proves it is not a blanket pass:
+# `rules_partial` is accountable for its own backend toolchain, so that label is
+# exempt — but the `@rust_toolchains//:all` it also leaks is NOT, and must still
+# appear in the golden. This is the whole reason the exemption is label-scoped:
+# the version-keyed, all-or-nothing predicate it replaced would have swallowed
+# the leak along with the legitimate registration.
+<https://tbzl.dev/m/rules_partial/2.0.0> a gate:ModuleVersion, gate:RulesModule ;
+    gate:name "rules_partial" ;
+    gate:version "2.0.0" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "rules_partial", "partial" ;
+    gate:registersToolchain "//partial/backend:local_toolchain" ;
+    gate:registersToolchain "@rust_toolchains//:all" .
+
+[] gate:toolchainProviderFor "rules_partial" ;
+   gate:providesToolchain "//partial/backend:local_toolchain" .
+
 # --- D3: the live vpn violation, same extension as the rules_k8s bug. ---------
 <https://tbzl.dev/m/vpn/0.0.1> a gate:ModuleVersion ;
     gate:name "vpn" ;
@@ -46,10 +77,34 @@
 <https://tbzl.dev/ext/vpn/0.0.1/0> a gate:ExtensionUsage ;
     gate:extBzlFile "@rules_oci//oci:extensions.bzl" ;
     gate:extName "oci" ;
+    gate:extDev false ;
     gate:extIsForeign true ;
     gate:introducesRepo "distroless_java" ;
     gate:choseRepo "distroless_java" ;
     gate:ofModule <https://tbzl.dev/m/vpn/0.0.1> .
+
+# D3, the NEAR MISS: identical to `vpn` above in every respect except that the
+# usage is dev_dependency. A dev usage is dropped from every graph but this
+# module's own, so `smoke_npm` is never in a consumer's graph and cannot collide
+# with anything — the gate must NOT flag it. Without this row a regression that
+# dropped the `gate:extDev false` clause would still produce the expected TSV,
+# and the `_detects` diff would pass while the gate over-matched by 8 rows on
+# the real registry.
+<https://tbzl.dev/m/rules_devonly/1.0.0> a gate:ModuleVersion, gate:RulesModule ;
+    gate:name "rules_devonly" ;
+    gate:version "1.0.0" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "rules_devonly", "devonly" ;
+    gate:usesExtension <https://tbzl.dev/ext/rules_devonly/1.0.0/0> .
+
+<https://tbzl.dev/ext/rules_devonly/1.0.0/0> a gate:ExtensionUsage ;
+    gate:extBzlFile "@aspect_rules_js//npm:extensions.bzl" ;
+    gate:extName "npm" ;
+    gate:extDev true ;
+    gate:extIsForeign true ;
+    gate:introducesRepo "smoke_npm" ;
+    gate:choseRepo "smoke_npm" ;
+    gate:ofModule <https://tbzl.dev/m/rules_devonly/1.0.0> .
 
 # --- C1: one atom selected at two versions across two roots. ------------------
 <https://tbzl.dev/sel/a/1.0.0/rules_java> a gate:Selection ;

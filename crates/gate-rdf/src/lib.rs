@@ -84,11 +84,30 @@ fn module_iri(name: &str, version: &Version) -> String {
 /// stays in the query. `rules_jena` accepts both `rules_jena_*` and `jena_*`,
 /// which is why `rules_jena` naming its Maven repo `jena_maven` is correct and
 /// must not be flagged.
+///
+/// A module name may legally contain `-`, but a Bazel apparent repo name may
+/// not, so a hyphenated module cannot literally prefix its repos with its own
+/// name. Emitting the underscored form as well is what makes `fastverk-app`
+/// able to satisfy D3 at all — without it the gate demands a namespace that no
+/// legal repo name can carry, which is unsatisfiable rather than merely strict.
 fn namespace_prefixes(module: &str) -> Vec<String> {
     let mut v = vec![module.to_string()];
     if let Some(short) = module.strip_prefix("rules_") {
         if !short.is_empty() {
             v.push(short.to_string());
+        }
+    }
+    // Underscored variants, appended after the literal ones so the order stays
+    // stable for existing modules. `dedup` needs a sort first, but sorting would
+    // churn every emitted fact, so filter against what is already present.
+    for u in v
+        .iter()
+        .filter(|p| p.contains('-'))
+        .map(|p| p.replace('-', "_"))
+        .collect::<Vec<_>>()
+    {
+        if !v.contains(&u) {
+            v.push(u);
         }
     }
     v
@@ -388,4 +407,49 @@ pub fn project_registry(
     }
 
     Ok((out, unresolved))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::namespace_prefixes;
+
+    #[test]
+    fn plain_module_offers_only_itself() {
+        assert_eq!(namespace_prefixes("meridian"), vec!["meridian"]);
+    }
+
+    #[test]
+    fn rules_prefix_also_offers_the_short_form() {
+        // Why `rules_jena` naming its Maven repo `jena_maven` must pass D3.
+        assert_eq!(
+            namespace_prefixes("rules_jena"),
+            vec!["rules_jena", "jena"]
+        );
+    }
+
+    #[test]
+    fn hyphenated_module_offers_an_underscored_form() {
+        // A Bazel apparent repo name cannot carry a hyphen, so without this
+        // `fastverk-app` has NO legal repo name that satisfies D3 — the gate
+        // would be unsatisfiable rather than merely strict.
+        assert_eq!(
+            namespace_prefixes("fastverk-app"),
+            vec!["fastverk-app", "fastverk_app"]
+        );
+    }
+
+    #[test]
+    fn hyphenated_rules_module_offers_both_underscored_forms() {
+        assert_eq!(
+            namespace_prefixes("rules_foo-bar"),
+            vec!["rules_foo-bar", "foo-bar", "rules_foo_bar", "foo_bar"]
+        );
+    }
+
+    #[test]
+    fn no_duplicates_when_there_is_nothing_to_underscore() {
+        // The underscored pass must not re-emit a prefix that is already there.
+        let p = namespace_prefixes("rules_k8s");
+        assert_eq!(p, vec!["rules_k8s", "k8s"]);
+    }
 }

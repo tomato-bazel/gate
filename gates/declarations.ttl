@@ -7,6 +7,25 @@
 #
 # This is deliberately a small, reviewable allowlist rather than a heuristic in
 # the query: an exemption should require someone to write the module's name down.
+#
+# TWO PROPERTIES THIS FILE MUST HAVE, both of which the first cut got wrong:
+#
+#   * VERSION-AGNOSTIC. Keying on a module VERSION (`<.../m/rules_jena/0.3.2>`)
+#     meant republishing rules_jena at 0.3.3 silently re-tripped D2 — and, once
+#     D2 is enforced, that turns `bazel test //...` red here AND blocks the very
+#     publish PR carrying the bump. A self-inflicted deadlock, discovered at the
+#     worst possible moment. An exemption is a statement about what a module IS,
+#     and that does not change with a patch release.
+#
+#   * LABEL-SCOPED, WHERE POSSIBLE. A whole-module exemption is all-or-nothing:
+#     exempting `rules_lora` for its three genuine backend toolchains would also
+#     exempt its accidental `@rust_toolchains//:all` leak — exactly what D2
+#     exists to catch. So a declaration may instead name the specific labels the
+#     module is accountable for providing, and anything else it registers stays
+#     a finding. Prefer the scoped form; reach for the unscoped form only when
+#     providing toolchains is the module's ENTIRE purpose.
 @prefix gate: <https://tbzl.dev/ns/gate#> .
 
-<https://tbzl.dev/m/rules_jena/0.3.2> gate:declaredToolchainProvider true .
+# Unscoped: being a Jena toolchain implementation is the whole point of the
+# module, so every toolchain it registers is in scope by construction.
+[] gate:toolchainProviderFor "rules_jena" .

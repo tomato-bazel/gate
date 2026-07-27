@@ -3867,6 +3867,7 @@
     gate:version "0.0.2" ;
     gate:isLatest true ;
     gate:namespacePrefix "fastverk-app" ;
+    gate:namespacePrefix "fastverk_app" ;
     gate:yanked false ;
     gate:homepage "https://github.com/fastverk/fastverk-app" ;
     gate:integrity "sha256-bgrp6eFT48lTyPz+X094FzLo05EDx4a6VecDg5RMxwg=" ;
