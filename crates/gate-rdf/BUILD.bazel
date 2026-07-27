@@ -1,7 +1,7 @@
 """gate-rdf — project a bzlmod registry to RDF. Facts only, no policy."""
 
 load("@gate_crates//:defs.bzl", "all_crate_deps")
-load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -11,6 +11,12 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2021",
     deps = ["//crates/bzlmod"] + all_crate_deps(normal = True),
+)
+
+rust_test(
+    name = "gate_rdf_test",
+    crate = ":gate_rdf",
+    edition = "2021",
 )
 
 rust_binary(

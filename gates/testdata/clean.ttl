@@ -16,6 +16,7 @@
 <https://tbzl.dev/ext/rules_good/1.0.0/0> a gate:ExtensionUsage ;
     gate:extBzlFile "@rules_oci//oci:extensions.bzl" ;
     gate:extName "oci" ;
+    gate:extDev false ;
     gate:extIsForeign true ;
     gate:introducesRepo "good_base" ;
     gate:choseRepo "good_base" ;
@@ -41,6 +42,7 @@
 <https://tbzl.dev/ext/rules_singleton/1.0.0/0> a gate:ExtensionUsage ;
     gate:extBzlFile "@rules_rust//rust:extensions.bzl" ;
     gate:extName "rust" ;
+    gate:extDev false ;
     gate:extIsForeign true ;
     gate:introducesRepo "rust_toolchains" ;
     gate:ofModule <https://tbzl.dev/m/rules_singleton/1.0.0> .

@@ -8,8 +8,21 @@
 # The predicate is UNDECLARED leakage, not any registration: `rules_jena`
 # legitimately registers four Jena toolchains because being a toolchain
 # implementation is its entire purpose. Providers opt in via
-# gate:declaredToolchainProvider in declarations.ttl, which keeps the
-# exception list reviewable as data rather than buried in a query.
+# gate:toolchainProviderFor in declarations.ttl, which keeps the exception list
+# reviewable as data rather than buried in a query.
+#
+# An exemption comes in two strengths, and the difference matters:
+#
+#   * UNSCOPED — `[] gate:toolchainProviderFor "rules_jena" .` exempts every
+#     toolchain the module registers. Correct only when providing toolchains is
+#     the module's entire purpose.
+#   * SCOPED — the same, plus one gate:providesToolchain per label. Exempts only
+#     those labels; anything else the module registers is still a finding. This
+#     is what lets `rules_lora` be accountable for its three backend toolchains
+#     while its accidental `@rust_toolchains//:all` leak still shows up.
+#
+# Both keyed on the module NAME, never a version IRI: an exemption says what a
+# module IS, and republishing must not silently re-trip the gate.
 PREFIX gate: <https://tbzl.dev/ns/gate#>
 
 SELECT ?module ?version ?toolchain
@@ -17,6 +30,15 @@ WHERE {
   ?m gate:name ?module ;
      gate:version ?version ;
      gate:registersToolchain ?toolchain .
-  FILTER NOT EXISTS { ?m gate:declaredToolchainProvider true }
+  # An unscoped declaration exempts the module outright.
+  FILTER NOT EXISTS {
+    ?d gate:toolchainProviderFor ?module .
+    FILTER NOT EXISTS { ?d gate:providesToolchain ?any }
+  }
+  # A scoped declaration exempts only the labels it names.
+  FILTER NOT EXISTS {
+    ?d gate:toolchainProviderFor ?module ;
+       gate:providesToolchain ?toolchain .
+  }
 }
 ORDER BY ?module ?toolchain

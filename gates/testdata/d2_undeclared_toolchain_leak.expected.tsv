@@ -1,2 +1,3 @@
 ?module	?version	?toolchain
 "bad_toolchain"	"0.0.1"	"@rust_toolchains//:all"
+"rules_partial"	"2.0.0"	"@rust_toolchains//:all"
