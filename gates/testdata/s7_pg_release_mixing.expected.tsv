@@ -1,0 +1,3 @@
+?module	?version	?dependency	?depVersion	?finding
+"pgmigrate"	"18.0.0"	"pgast"	"17.6.2"	"mixed_pg_release"
+"pgquery"	"0.2"	""	""	"malformed_pg_version"

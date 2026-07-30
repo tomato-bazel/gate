@@ -1,0 +1,75 @@
+# S7 — PG-release-versioned modules must not mix Postgres releases.
+#
+# The leangres modules are versioned `<pg_major>.<pg_minor>.<patch>` so that a
+# consumer can pick a Postgres release and get a consistent set: pgast 17.6.2
+# with pgcatalog 17.6.2 and pgquery 17.6.0 all model **PG 17.6**. Catalog OIDs,
+# bootstrap `.dat` contents and libpg_query parse-node types all change across a
+# major, so a graph holding pgcatalog 18.x under pgast 17.6.x is not a version
+# skew — it is two different databases being modelled at once, and the Lean
+# proofs on top of it are about neither.
+#
+# ⛔ THIS WAS SUPPOSED TO BE BZLMOD'S JOB, AND IT IS NOT.
+#
+# The scheme was published claiming `compatibility_level = 17` would make bzlmod
+# *refuse* to mix majors. It does not: `compatibility_level` is a **no-op in
+# Bazel 9** — declared, parsed, and never enforced. So the guarantee the version
+# scheme advertises has had nothing behind it since the day it was written, and
+# every module still carries the declaration that implies otherwise. That is the
+# worst shape a constraint can take: documented, believed, and absent.
+#
+# This gate is the enforcement. It reads the *dependency edges*, which is where
+# the mixing would actually show up.
+#
+# Two findings:
+#
+#   * `mixed_pg_release` — a declared PG-versioned module depends on another
+#     declared PG-versioned module whose `<major>.<minor>` differs. This is the
+#     one that matters.
+#   * `malformed_pg_version` — a declared PG-versioned module published at a
+#     version that is not `N.N.N` at all. Without this the first check silently
+#     weakens: a version that does not parse yields a garbage release prefix,
+#     and two garbage prefixes can compare equal.
+#
+# ⚠ The dependency's name and version are parsed OUT OF THE IRI rather than
+# joined against its `gate:name`/`gate:version`. That is deliberate. A join
+# requires the target to have been projected, and an edge pointing at a version
+# with no directory projects no such node — so the join would silently drop
+# exactly the edge most likely to be wrong. Parsing the IRI cannot fail open.
+#
+# SCOPE: `sqlast` is intentionally NOT declared. It is dialect-neutral, models
+# no Postgres release, and is semver'd on purpose. Declaring it would force it
+# onto a version axis that means nothing for it.
+PREFIX gate: <https://tbzl.dev/ns/gate#>
+
+SELECT ?module ?version ?dependency ?depVersion ?finding
+WHERE {
+  {
+    ?m gate:name ?module ;
+       gate:version ?version ;
+       gate:dependsOn ?d .
+
+    # Both ends must be declared PG-release-versioned. The declaration is by
+    # module NAME, never by version — see declarations.ttl for why keying an
+    # exemption to a version deadlocks the very PR that bumps it.
+    [] gate:pgReleaseVersioned ?module .
+
+    BIND(REPLACE(STR(?d), "^https://tbzl\\.dev/m/([^/]+)/.*$", "$1") AS ?dependency)
+    BIND(REPLACE(STR(?d), "^https://tbzl\\.dev/m/[^/]+/(.*)$", "$1") AS ?depVersion)
+    [] gate:pgReleaseVersioned ?dependency .
+
+    BIND(REPLACE(?version,    "^([0-9]+\\.[0-9]+)\\..*$", "$1") AS ?rel)
+    BIND(REPLACE(?depVersion, "^([0-9]+\\.[0-9]+)\\..*$", "$1") AS ?depRel)
+    FILTER(?rel != ?depRel)
+
+    BIND("mixed_pg_release" AS ?finding)
+  } UNION {
+    ?m gate:name ?module ;
+       gate:version ?version .
+    [] gate:pgReleaseVersioned ?module .
+    FILTER(!REGEX(?version, "^[0-9]+\\.[0-9]+\\.[0-9]+$"))
+    BIND("" AS ?dependency)
+    BIND("" AS ?depVersion)
+    BIND("malformed_pg_version" AS ?finding)
+  }
+}
+ORDER BY ?module ?version ?dependency ?finding
