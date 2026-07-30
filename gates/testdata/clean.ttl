@@ -70,3 +70,29 @@
     gate:declaresVersion "0.9.0", "1.0.0" ;
     gate:hasVersionDir "0.9.0", "1.0.0" ;
     gate:isRegistryEntry true .
+
+# --- S7: a consistent PG-release set. -----------------------------------------
+# Every declared PG-versioned module on the same <major>.<minor>. The patch
+# components differ freely — that is the axis they are FOR.
+<https://tbzl.dev/m/pgast/17.6.2> a gate:ModuleVersion ;
+    gate:name "pgast" ;
+    gate:version "17.6.2" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "pgast" ;
+    gate:dependsOn <https://tbzl.dev/m/pgcatalog/17.6.0> .
+
+<https://tbzl.dev/m/pgcatalog/17.6.0> a gate:ModuleVersion ;
+    gate:name "pgcatalog" ;
+    gate:version "17.6.0" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "pgcatalog" .
+
+# An undeclared module (sqlast) may sit at any version and depend on a
+# PG-versioned one — S7 must not reach it. This is the arm that fails if the
+# declaration join is dropped from the query.
+<https://tbzl.dev/m/sqlast/0.1.0> a gate:ModuleVersion ;
+    gate:name "sqlast" ;
+    gate:version "0.1.0" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "sqlast" ;
+    gate:dependsOn <https://tbzl.dev/m/pgast/17.6.2> .

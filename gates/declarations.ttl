@@ -29,3 +29,21 @@
 # Unscoped: being a Jena toolchain implementation is the whole point of the
 # module, so every toolchain it registers is in scope by construction.
 [] gate:toolchainProviderFor "rules_jena" .
+
+# ── S7: modules versioned by POSTGRES RELEASE, not semver ──────────────────────
+#
+# `<pg_major>.<pg_minor>.<patch>`, so a consumer picks a Postgres release and
+# gets a consistent set. Declared by NAME for the same reason as above: this is
+# a statement about what the module IS, and it must not need re-declaring at
+# every patch bump.
+#
+# The scheme originally leaned on `compatibility_level = 17` to make bzlmod
+# refuse a cross-major graph. That is a NO-OP in Bazel 9, so S7 is the only
+# thing actually enforcing it.
+#
+# `sqlast` is deliberately absent: it is dialect-neutral, models no Postgres
+# release, and is semver'd on purpose.
+[] gate:pgReleaseVersioned "pgast" .
+[] gate:pgReleaseVersioned "pgcatalog" .
+[] gate:pgReleaseVersioned "pgquery" .
+[] gate:pgReleaseVersioned "pgmigrate" .

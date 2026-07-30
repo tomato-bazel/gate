@@ -37,6 +37,7 @@ GATES = [
     "d3_unnamespaced_extension_repo",
     "c1_atom_multi_version",
     "s6_metadata_directory_drift",
+    "s7_pg_release_mixing",
 ]
 
 exports_files([g + ".rq" for g in GATES] + ["declarations.ttl"])
@@ -96,8 +97,13 @@ sparql_query_smoke_test(
 # rules_huggingface 0.0.4, rules_lora 0.1.4 and spec 0.6.3 without their
 # local_path_overrides. rules_schema_org 0.0.1 turned out not to build at all
 # once its override came off, which is what the invariant is for.
+# S7 (2026-07-30): zero on arrival. It was written *with* the leangres modules
+# rather than retrofitted to them, so there was never a backlog to burn down —
+# and it goes in enforcing rather than reporting so the first cross-major
+# publish is blocked instead of counted.
 ENFORCED_ON_REGISTRY = [
     "s4_no_override_in_published_module",
+    "s7_pg_release_mixing",
 ]
 
 [

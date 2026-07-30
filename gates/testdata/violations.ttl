@@ -137,3 +137,30 @@
     gate:declaresVersion "1.0.0", "1.1.0" ;
     gate:hasVersionDir "1.0.0", "1.2.0" ;
     gate:isRegistryEntry true .
+
+# --- S7: a graph mixing two Postgres majors. ----------------------------------
+# `pgmigrate` 18.0.0 pulls `pgast` 17.6.2. Bazel resolves this happily —
+# `compatibility_level` is a no-op — and the result models PG 18 and PG 17.6 at
+# once. Two rows expected, not one: the malformed-version arm must ALSO fire on
+# `pgquery`, whose version is not `N.N.N` at all.
+<https://tbzl.dev/m/pgmigrate/18.0.0> a gate:ModuleVersion ;
+    gate:name "pgmigrate" ;
+    gate:version "18.0.0" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "pgmigrate" ;
+    gate:dependsOn <https://tbzl.dev/m/pgast/17.6.2> ,
+                   <https://tbzl.dev/m/pgcatalog/18.0.0> .
+
+<https://tbzl.dev/m/pgcatalog/18.0.0> a gate:ModuleVersion ;
+    gate:name "pgcatalog" ;
+    gate:version "18.0.0" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "pgcatalog" .
+
+# Published off the scheme entirely — the shape that makes the release-prefix
+# comparison meaningless if it goes unreported.
+<https://tbzl.dev/m/pgquery/0.2> a gate:ModuleVersion ;
+    gate:name "pgquery" ;
+    gate:version "0.2" ;
+    gate:isLatest true ;
+    gate:namespacePrefix "pgquery" .
