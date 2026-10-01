@@ -17,26 +17,40 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [boston-linux-x64-tbzl, macos-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: bazel-contrib/setup-bazel@0.10.0
+        if: matrix.os == 'macos-latest'
         with:
           bazelisk-cache: true
           disk-cache: ${{ github.workflow }}-${{ matrix.os }}
           repository-cache: true
-      - run: bazel test //... --test_output=errors
+      - name: Test with Bazel
+        run: |
+          set -euo pipefail
+          if [[ '${{ matrix.os }}' == 'boston-linux-x64-tbzl' ]]; then
+            : "${TBZL_OUTPUT_ROOT:?Dell output root is required}"
+            : "${TBZL_CACHE_ROOT:?Dell shared cache root is required}"
+            bazel --version
+            bazel --output_user_root="$TBZL_OUTPUT_ROOT" test \
+              --repository_cache="$TBZL_CACHE_ROOT/repo" //... --test_output=errors
+          else
+            bazel test //... --test_output=errors
+          fi
 
   buildifier:
     name: buildifier lint
-    runs-on: ubuntu-latest
+    runs-on: boston-linux-x64-tbzl
     steps:
       - uses: actions/checkout@v4
       - name: install buildifier
         run: |
-          curl -fsSL -o /usr/local/bin/buildifier \
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL -o "$RUNNER_TEMP/bin/buildifier" \
             https://github.com/bazelbuild/buildtools/releases/download/v7.3.1/buildifier-linux-amd64
-          chmod +x /usr/local/bin/buildifier
+          chmod +x "$RUNNER_TEMP/bin/buildifier"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
       # NOT `-r .`: vendor/ holds byte-exact copies of upstream MODULE.bazel
       # files. Reformatting them would make the snapshot misrepresent what
       # upstream actually published, and would break `snapshot --check`, which
@@ -56,16 +70,17 @@ jobs:
   # Read-only: --check fetches and compares, and writes nothing.
   snapshot:
     name: vendored snapshot is current
-    runs-on: ubuntu-latest
+    runs-on: boston-linux-x64-tbzl
     steps:
       - uses: actions/checkout@v4
-      - uses: bazel-contrib/setup-bazel@0.10.0
-        with:
-          bazelisk-cache: true
-          disk-cache: ${{ github.workflow }}-snapshot
-          repository-cache: true
       - name: Clone the registry (public, no auth)
         run: git clone --depth 1 https://github.com/tomato-bazel/bazel-registry.git _registry
       - run: |
-          bazel run //crates/gate-snapshot:snapshot -- \
+          set -euo pipefail
+          : "${TBZL_OUTPUT_ROOT:?Dell output root is required}"
+          : "${TBZL_CACHE_ROOT:?Dell shared cache root is required}"
+          bazel --version
+          bazel --output_user_root="$TBZL_OUTPUT_ROOT" run \
+            --repository_cache="$TBZL_CACHE_ROOT/repo" \
+            //crates/gate-snapshot:snapshot -- \
             --registry "$PWD/_registry" --out "$PWD/vendor/bcr" --check
