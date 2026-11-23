@@ -47,3 +47,14 @@
 [] gate:pgReleaseVersioned "pgcatalog" .
 [] gate:pgReleaseVersioned "pgquery" .
 [] gate:pgReleaseVersioned "pgmigrate" .
+
+# Scoped: rules_lora's training backends (local / modal / runpod) ARE
+# toolchains — `lora_train` resolves `@rules_lora//lora/backend:toolchain_type`
+# per platform, so registering them is how the default runpod backend works for
+# a consumer with no extra setup. Only these three labels are exempt; anything
+# else rules_lora registers non-dev (its old `@rust_toolchains//:all`, which is
+# dev-only from 0.1.5) stays a finding.
+[] gate:toolchainProviderFor "rules_lora" ;
+   gate:providesToolchain "@rules_lora//lora/backend:local_toolchain" ,
+                          "@rules_lora//lora/backend:modal_toolchain" ,
+                          "@rules_lora//lora/backend:runpod_toolchain" .
